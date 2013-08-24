@@ -1,0 +1,8 @@
+__author__ = 'Judd'
+
+BOARD_HEIGHT = 12
+UNOCCUPIED = 1
+OCCUPIED = 2
+UNKNOWN = 0
+BUBBLE = 5
+TOTAL_HITS = 21
