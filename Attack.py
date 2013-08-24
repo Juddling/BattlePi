@@ -20,21 +20,43 @@ class Attack:
             if self.repeats >= 1000:
                 break
 
-            if self.view_of_opponent[i][j] != constants.UNKNOWN:
-                self.repeats += 1
+            if self.repeat_check(i, j):
                 continue
 
             self.attack_enemy(i, j)
 
+    def repeat_check(self, i, j):
+        if self.view_of_opponent[i][j] != constants.UNKNOWN:
+            self.repeats += 1
+            return True
+
+        return False
+
     def attack_enemy(self, i, j):
+        if i < 0 or j < 0:
+            return
+
+        if i > constants.BOARD_HEIGHT:
+            return
+
+        if j >= len(self.view_of_opponent[i]):
+            return
+
+        if self.repeat_check(i, j):
+            return
+
         if self.enemy_config[i][j] == constants.OCCUPIED:
             self.hits += 1
             self.view_of_opponent[i][j] = constants.OCCUPIED
+
+            self.hunt(i, j)
         else:
             self.misses += 1
             self.view_of_opponent[i][j] = constants.UNOCCUPIED
 
     def random(self):
+        """Searches for ships across the whole domain"""
+
         while True:
             i1 = randint(0, 11)
 
@@ -44,3 +66,11 @@ class Attack:
                 i2 = randint(0, 11)
 
             return i1, i2
+
+    def hunt(self, i, j):
+        """Surrounds a hit to try and sink a ship"""
+
+        self.attack_enemy(i, j-1) # left
+        self.attack_enemy(i, j+1) # right
+        self.attack_enemy(i+1, j) # up
+        self.attack_enemy(i-1, j) # down
