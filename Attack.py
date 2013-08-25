@@ -1,7 +1,8 @@
 __author__ = 'Judd'
 
-from random import randint, choice
+from random import randint, shuffle
 import constants
+
 
 class Attack:
     def __init__(self, enemy_config):
@@ -15,15 +16,19 @@ class Attack:
         #print (self.view_of_opponent)
 
         while self.hits < constants.TOTAL_HITS:
-            i, j = self.random()
+            pos = self.markers()
+            i = pos[0]
+            j = pos[1]
 
             if self.repeats >= 1000:
-                break
+                raise RuntimeError('Too many repeats!')
 
             if self.repeat_check(i, j):
                 continue
 
             self.attack_enemy(i, j)
+
+        pass
 
     def repeat_check(self, i, j):
         if self.view_of_opponent[i][j] != constants.UNKNOWN:
@@ -32,14 +37,54 @@ class Attack:
 
         return False
 
-    def attack_enemy(self, i, j):
+    def legal_position(self, i, j):
         if i < 0 or j < 0:
-            return
+            return False
 
-        if i > constants.BOARD_HEIGHT:
-            return
+        if i >= constants.BOARD_HEIGHT:
+            return False
 
         if j >= len(self.view_of_opponent[i]):
+            return False
+
+        return True
+
+    def eliminated(self, i, j):
+        """can square be eliminated because all neighbours are known"""
+
+        neighbours = [
+            [i - 1, j],
+            [i + 1, j],
+            [i, j - 1],
+            [i, j + 1]
+        ]
+
+        count = 0
+
+        for square in neighbours:
+            if not self.legal_position(square[0], square[1]) or self.known_square(square[0], square[1]):
+                count += 1
+            else:
+                return False
+
+        if count == 4:
+            return True
+
+        return False
+
+    def known_square(self, i, j):
+        square = self.view_of_opponent[i][j]
+
+        if square == constants.OCCUPIED or square == constants.UNOCCUPIED:
+            return True
+
+        return False
+
+    def attack_enemy(self, i, j):
+        if self.hits >= constants.TOTAL_HITS:
+            return
+
+        if not self.legal_position(i, j):
             return
 
         if self.repeat_check(i, j):
@@ -58,19 +103,88 @@ class Attack:
         """Searches for ships across the whole domain"""
 
         while True:
-            i1 = randint(0, 11)
+            i = randint(0, 11)
 
-            if i1 < 6:
-                i2 = randint(0, 5)
+            if i < 6:
+                j = randint(0, 5)
             else:
-                i2 = randint(0, 11)
+                j = randint(0, 11)
 
-            return i1, i2
+            if i % 2 == 0 and j % 2 == 1:
+                continue
+
+            if i % 2 == 1 and j % 2 == 0:
+                continue
+
+            if self.eliminated(i, j):
+                continue
+
+            return i, j
+
+    def markers(self):
+        """center of each 3x3 sudoku square"""
+
+        if not hasattr(self, 'marker_count'):
+            self.marker_count = 0
+        else:
+            self.marker_count += 1
+
+        twelve = [
+            [1, 1],
+            [1, 4],
+            [4, 1],
+            [4, 4],
+            [7, 1],
+            [7, 4],
+            [10, 1],
+            [10, 4],
+            [7, 7],
+            [7, 10],
+            [10, 7],
+            [10, 10]
+        ]
+
+        thirty_six = [
+            [0, 0],
+            [0, 3],
+            [2, 2],
+            [2, 5],
+            [3, 0],
+            [3, 3],
+            [5, 2],
+            [5, 5],
+            [6, 0],
+            [6, 3],
+            [8, 2],
+            [8, 5],
+            [9, 0],
+            [9, 3],
+            [11, 2],
+            [11, 5],
+            [6, 6],
+            [6, 9],
+            [8, 8],
+            [8, 11],
+            [9, 6],
+            [9, 10],
+            [11, 9],
+            [11, 11]
+        ]
+
+        shuffle(twelve)
+        shuffle(thirty_six)
+
+        joined = twelve + thirty_six
+
+        if self.marker_count >= 12:
+            raise RuntimeError('Got too big!')
+
+        return twelve[self.marker_count]
 
     def hunt(self, i, j):
         """Surrounds a hit to try and sink a ship"""
 
-        self.attack_enemy(i, j-1) # left
-        self.attack_enemy(i, j+1) # right
-        self.attack_enemy(i+1, j) # up
-        self.attack_enemy(i-1, j) # down
+        self.attack_enemy(i, j - 1) # left
+        self.attack_enemy(i, j + 1) # right
+        self.attack_enemy(i + 1, j) # up
+        self.attack_enemy(i - 1, j) # down
