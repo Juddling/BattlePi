@@ -16,9 +16,7 @@ class Attack:
         #print (self.view_of_opponent)
 
         while self.hits < constants.TOTAL_HITS:
-            pos = self.markers()
-            i = pos[0]
-            j = pos[1]
+            i, j = self.random()
 
             if self.repeats >= 1000:
                 raise RuntimeError('Too many repeats!')
@@ -129,57 +127,59 @@ class Attack:
         else:
             self.marker_count += 1
 
-        twelve = [
-            [1, 1],
-            [1, 4],
-            [4, 1],
-            [4, 4],
-            [7, 1],
-            [7, 4],
-            [10, 1],
-            [10, 4],
-            [7, 7],
-            [7, 10],
-            [10, 7],
-            [10, 10]
-        ]
+        if not hasattr(self, 'twelve'):
+            self.twelve = [
+                [1, 1],
+                [1, 4],
+                [4, 1],
+                [4, 4],
+                [7, 1],
+                [7, 4],
+                [10, 1],
+                [10, 4],
+                [7, 7],
+                [7, 10],
+                [10, 7],
+                [10, 10]
+            ]
 
-        thirty_six = [
-            [0, 0],
-            [0, 3],
-            [2, 2],
-            [2, 5],
-            [3, 0],
-            [3, 3],
-            [5, 2],
-            [5, 5],
-            [6, 0],
-            [6, 3],
-            [8, 2],
-            [8, 5],
-            [9, 0],
-            [9, 3],
-            [11, 2],
-            [11, 5],
-            [6, 6],
-            [6, 9],
-            [8, 8],
-            [8, 11],
-            [9, 6],
-            [9, 10],
-            [11, 9],
-            [11, 11]
-        ]
+            thirty_six = [
+                [0, 0],
+                [0, 3],
+                [2, 2],
+                [2, 5],
+                [3, 0],
+                [3, 3],
+                [5, 2],
+                [5, 5],
+                [6, 0],
+                [6, 3],
+                [8, 2],
+                [8, 5],
+                [9, 0],
+                [9, 3],
+                [11, 2],
+                [11, 5],
+                [6, 6],
+                [6, 9],
+                [8, 8],
+                [8, 11],
+                [9, 6],
+                [9, 10],
+                [11, 9],
+                [11, 11]
+            ]
 
-        shuffle(twelve)
-        shuffle(thirty_six)
-
-        joined = twelve + thirty_six
+            shuffle(self.twelve)
+            shuffle(thirty_six)
 
         if self.marker_count >= 12:
             raise RuntimeError('Got too big!')
 
-        return twelve[self.marker_count]
+        return self.twelve[self.marker_count][0], self.twelve[self.marker_count][1]
+
+    def is_hit(self, i, j):
+        return self.view_of_opponent[i][j] == constants.OCCUPIED
 
     def hunt(self, i, j):
         """Surrounds a hit to try and sink a ship"""

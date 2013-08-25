@@ -82,7 +82,7 @@ iterations = 1000
 csv = ""
 
 for i in range(iterations):
-    attack = Attack(enemy_config3)
+    attack = Attack(enemy_config1)
     total = attack.hits + attack.misses
     csv += str(total) + "\n"
 
@@ -91,5 +91,5 @@ for i in range(iterations):
 
     #print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Repeats: ", attack.repeats)
 
-with open("results3.csv", 'w') as f:
+with open("results1.csv", 'w') as f:
     f.write(csv)
