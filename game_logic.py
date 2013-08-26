@@ -124,10 +124,7 @@ def ChooseAndPrintMove(Opponent):
 
 # Distribute the fleet onto your board
 def DeployFleet(Player):
-    # Simple example which always positions the ships in the same place
-    # This is a very bad idea! You will want to do something random
-
-    ships = transform.GetShips()
+    ships = transform.raw_ships()
 
     for ship in ships:
         ship = transform.RandomTransform(ship)
@@ -150,7 +147,7 @@ def ValidPlacement(domain, ship):
     attempts = 0
     while True:
         if attempts > 10:
-            raise RuntimeError('Could not find solution after multiple attemps')
+            raise RuntimeError('Could not find solution after multiple attempts')
 
         x, y = RandomCoOrdinates()
 
