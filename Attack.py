@@ -12,6 +12,7 @@ class Attack:
         self.misses = 0
         self.repeats = 0
         self.enemy_config = enemy_config
+        self.search_hits = 0
 
         #print (self.view_of_opponent)
 
@@ -24,7 +25,7 @@ class Attack:
             if self.repeat_check(i, j):
                 continue
 
-            self.attack_enemy(i, j)
+            self.attack_enemy(i, j, "search")
 
         pass
 
@@ -78,7 +79,7 @@ class Attack:
 
         return False
 
-    def attack_enemy(self, i, j):
+    def attack_enemy(self, i, j, attack_type):
         if self.hits >= constants.TOTAL_HITS:
             return
 
@@ -92,10 +93,16 @@ class Attack:
             self.hits += 1
             self.view_of_opponent[i][j] = constants.OCCUPIED
 
-            self.hunt(i, j)
+            if attack_type == "search":
+                self.search_hits += 1
+                self.shoot_lines(i, j)
+
+            return True
         else:
             self.misses += 1
             self.view_of_opponent[i][j] = constants.UNOCCUPIED
+
+            return False
 
     def random(self):
         """Searches for ships across the whole domain"""
@@ -180,6 +187,45 @@ class Attack:
 
     def is_hit(self, i, j):
         return self.view_of_opponent[i][j] == constants.OCCUPIED
+
+    def shoot_lines(self, i, j):
+        line = 1
+        i_direction = -1
+        j_direction = 0
+        hits = 0
+
+        while True:
+            attack_result = self.attack_enemy(i+(line*i_direction), j+(line*j_direction), "lines")
+
+            if attack_result:
+                hits += 1
+
+                if hits == 3:
+                    # stopping the miss after taking out the four boat
+                    return
+
+                line += 1
+                continue
+            else:
+                if j_direction == -1:
+                    return
+
+                if j_direction == 1:
+                    j_direction = -1
+
+                if i_direction == 1:
+                    # from down to right
+                    if hits > 0:
+                        return
+
+                    i_direction = 0
+                    j_direction = 1
+
+                if i_direction == -1:
+                    i_direction = 1
+
+                line = 1
+                continue
 
     def hunt(self, i, j):
         """Surrounds a hit to try and sink a ship"""
