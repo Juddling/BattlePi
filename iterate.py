@@ -48,7 +48,7 @@ enemy_config2 = [
     [2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1],
 ]
 
-#average 79
+#average 79 down to 62.1
 enemy_config3 = [
     [1, 1, 1, 1, 1, 1],
     [1, 2, 1, 1, 2, 1],
@@ -83,14 +83,14 @@ iterations = 1000
 csv = ""
 
 for i in range(iterations):
-    attack = Attack(enemy_config3)
+    attack = Attack(enemy_config4)
     total = attack.hits + attack.misses
     csv += str(total) + "\n"
 
     #if i % 1000 == 0:
     #    print (i)
 
-    #print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Repeats: ", attack.repeats)
+    print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Repeats: ", attack.repeats)
 
-with open("results3.csv", 'w') as f:
+with open("results4.csv", 'w') as f:
     f.write(csv)

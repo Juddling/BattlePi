@@ -3,6 +3,10 @@ __author__ = 'Judd'
 from random import randint, shuffle
 import constants
 
+class HuntType:
+    LINES = 1
+    RECURSIVE = 2
+    SEARCH = 3
 
 class Attack:
     def __init__(self, enemy_config):
@@ -13,19 +17,23 @@ class Attack:
         self.repeats = 0
         self.enemy_config = enemy_config
         self.search_hits = 0
+        self.true_random = False
 
         #print (self.view_of_opponent)
 
         while self.hits < constants.TOTAL_HITS:
             i, j = self.random()
 
-            if self.repeats >= 1000:
+            if self.repeats >= 500:
+                self.true_random = True
+
+            if self.repeats >= 2000:
                 raise RuntimeError('Too many repeats!')
 
             if self.repeat_check(i, j):
                 continue
 
-            self.attack_enemy(i, j, "search")
+            self.attack_enemy(i, j, HuntType.SEARCH)
 
         pass
 
@@ -61,7 +69,7 @@ class Attack:
         count = 0
 
         for square in neighbours:
-            if not self.legal_position(square[0], square[1]) or self.known_square(square[0], square[1]):
+            if not self.legal_position(square[0], square[1]) or self.is_empty(square[0], square[1]):
                 count += 1
             else:
                 return False
@@ -93,9 +101,12 @@ class Attack:
             self.hits += 1
             self.view_of_opponent[i][j] = constants.OCCUPIED
 
-            if attack_type == "search":
+            if attack_type == HuntType.SEARCH:
                 self.search_hits += 1
                 self.shoot_lines(i, j)
+
+            if attack_type == HuntType.RECURSIVE:
+                self.hunt(i, j)
 
             return True
         else:
@@ -115,11 +126,12 @@ class Attack:
             else:
                 j = randint(0, 11)
 
-            if i % 2 == 0 and j % 2 == 1:
-                continue
+            if not self.true_random:
+                if i % 2 == 0 and j % 2 == 1:
+                    continue
 
-            if i % 2 == 1 and j % 2 == 0:
-                continue
+                if i % 2 == 1 and j % 2 == 0:
+                    continue
 
             if self.eliminated(i, j):
                 continue
@@ -188,6 +200,29 @@ class Attack:
     def is_hit(self, i, j):
         return self.view_of_opponent[i][j] == constants.OCCUPIED
 
+    def is_empty(self, i, j):
+        return self.view_of_opponent[i][j] == constants.UNOCCUPIED
+
+    def attack_above_and_below(self, i, j):
+        if self.attack_enemy(i + 1, j, HuntType.LINES):
+            if self.attack_enemy(i - 1, j, HuntType.LINES):
+                return True
+            else:
+                # four in a row, then one was a hit and the other side wasn't... must be touching shapes... hunt!
+                self.hunt(i + 1, j)
+
+        return False
+
+    def attack_left_and_right(self, i, j):
+        if self.attack_enemy(i, j + 1, HuntType.LINES):
+            if self.attack_enemy(i, j - 1, HuntType.LINES):
+                return True
+            else:
+                # four in a row, then one was a hit and the other side wasn't... must be touching shapes... hunt!
+                self.hunt(i, j + 1)
+
+        return False
+
     def shoot_lines(self, i, j):
         line = 1
         i_direction = -1
@@ -195,12 +230,24 @@ class Attack:
         hits = 0
 
         while True:
-            attack_result = self.attack_enemy(i+(line*i_direction), j+(line*j_direction), "lines")
+            current_i = i+(line*i_direction)
+            current_j = j+(line*j_direction)
+            attack_result = self.attack_enemy(current_i, current_j, HuntType.LINES)
 
             if attack_result:
                 hits += 1
 
                 if hits == 3:
+                    # four in a row, now lets eliminate the T shape
+
+                    if j_direction != 0:
+                        if not self.attack_above_and_below(current_i, current_j):
+                            self.attack_above_and_below(current_i, current_j-(j_direction*3))
+
+                    if i_direction != 0:
+                        if not self.attack_left_and_right(current_i, current_j):
+                            self.attack_left_and_right(current_i - (i_direction * 3), current_j)
+
                     # stopping the miss after taking out the four boat
                     return
 
@@ -215,6 +262,11 @@ class Attack:
 
                 if i_direction == 1:
                     # from down to right
+
+                    if hits == 1:
+                        self.hunt(current_i, current_j)
+                        return
+
                     if hits > 0:
                         return
 
@@ -230,7 +282,7 @@ class Attack:
     def hunt(self, i, j):
         """Surrounds a hit to try and sink a ship"""
 
-        self.attack_enemy(i, j - 1) # left
-        self.attack_enemy(i, j + 1) # right
-        self.attack_enemy(i + 1, j) # up
-        self.attack_enemy(i - 1, j) # down
+        self.attack_enemy(i, j - 1, HuntType.RECURSIVE) # left
+        self.attack_enemy(i, j + 1, HuntType.RECURSIVE) # right
+        self.attack_enemy(i + 1, j, HuntType.RECURSIVE) # up
+        self.attack_enemy(i - 1, j, HuntType.RECURSIVE) # down
