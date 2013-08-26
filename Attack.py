@@ -35,6 +35,9 @@ class Attack:
 
             self.attack_enemy(i, j, HuntType.SEARCH)
 
+            if self.hits == 15:
+                pass
+
         pass
 
     def repeat_check(self, i, j):
@@ -262,6 +265,12 @@ class Attack:
 
                 if i_direction == 1:
                     # from down to right
+
+                    if hits == 2:
+                        # three in a row, fails either end
+                        # TODO: hit to the left/right of the middle and keep shooting (for T) in that direction until fail
+                        # one hit indicates the hovercraft
+                        pass
 
                     if hits == 1:
                         self.hunt(current_i, current_j)

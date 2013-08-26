@@ -79,11 +79,26 @@ enemy_config4 = [
     [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1],
 ]
 
+enemy_config5 = [
+    [1, 1, 1, 1, 1, 1],
+    [1, 2, 1, 1, 1, 1],
+    [1, 2, 1, 1, 1, 1],
+    [1, 2, 1, 1, 1, 2],
+    [1, 1, 1, 1, 1, 2],
+    [1, 1, 1, 1, 1, 2],
+    [1, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 1],
+    [1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 1],
+    [1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+    [1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1],
+]
+
 iterations = 1000
 csv = ""
 
 for i in range(iterations):
-    attack = Attack(enemy_config4)
+    attack = Attack(enemy_config5)
     total = attack.hits + attack.misses
     csv += str(total) + "\n"
 
@@ -92,5 +107,5 @@ for i in range(iterations):
 
     print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Repeats: ", attack.repeats)
 
-with open("results4.csv", 'w') as f:
+with open("results5.csv", 'w') as f:
     f.write(csv)
