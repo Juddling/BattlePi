@@ -3,10 +3,13 @@ __author__ = 'Judd'
 from random import randint, shuffle
 import constants
 
+
 class HuntType:
     LINES = 1
     RECURSIVE = 2
     SEARCH = 3
+    SINGLE_LINE = 4
+
 
 class Attack:
     def __init__(self, enemy_config):
@@ -17,7 +20,9 @@ class Attack:
         self.repeats = 0
         self.enemy_config = enemy_config
         self.search_hits = 0
+        self.search_misses = 0
         self.true_random = False
+        self.neighbours_hunted = []
 
         #print (self.view_of_opponent)
 
@@ -25,6 +30,7 @@ class Attack:
             i, j = self.random()
 
             if self.repeats >= 500:
+                # TODO: get rid of this, revert to shooting neighbours of existing hits
                 self.true_random = True
 
             if self.repeats >= 2000:
@@ -98,6 +104,9 @@ class Attack:
             return
 
         if self.repeat_check(i, j):
+            if self.is_hit(i, j):
+                self.hunt(i, j)
+
             return
 
         if self.enemy_config[i][j] == constants.OCCUPIED:
@@ -113,6 +122,9 @@ class Attack:
 
             return True
         else:
+            if attack_type == HuntType.SEARCH:
+                self.search_misses += 1
+
             self.misses += 1
             self.view_of_opponent[i][j] = constants.UNOCCUPIED
 
@@ -233,8 +245,8 @@ class Attack:
         hits = 0
 
         while True:
-            current_i = i+(line*i_direction)
-            current_j = j+(line*j_direction)
+            current_i = i + (line * i_direction)
+            current_j = j + (line * j_direction)
             attack_result = self.attack_enemy(current_i, current_j, HuntType.LINES)
 
             if attack_result:
@@ -245,7 +257,7 @@ class Attack:
 
                     if j_direction != 0:
                         if not self.attack_above_and_below(current_i, current_j):
-                            self.attack_above_and_below(current_i, current_j-(j_direction*3))
+                            self.attack_above_and_below(current_i, current_j - (j_direction * 3))
 
                     if i_direction != 0:
                         if not self.attack_left_and_right(current_i, current_j):
@@ -258,6 +270,7 @@ class Attack:
                 continue
             else:
                 if j_direction == -1:
+                    # here should be hunting for 2 boats
                     return
 
                 if j_direction == 1:
@@ -270,6 +283,10 @@ class Attack:
                         # three in a row, fails either end
                         # TODO: hit to the left/right of the middle and keep shooting (for T) in that direction until fail
                         # one hit indicates the hovercraft
+
+                        if self.shoot_line(current_i - 2, current_j + 1, 0, 1) == 0:
+                            self.shoot_line(current_i - 2, current_j - 1, 0, -1)
+
                         pass
 
                     if hits == 1:
@@ -291,7 +308,39 @@ class Attack:
     def hunt(self, i, j):
         """Surrounds a hit to try and sink a ship"""
 
+        if (i, j) in self.neighbours_hunted:
+            return
+
+        self.neighbours_hunted.append((i,j))
+
         self.attack_enemy(i, j - 1, HuntType.RECURSIVE) # left
         self.attack_enemy(i, j + 1, HuntType.RECURSIVE) # right
         self.attack_enemy(i + 1, j, HuntType.RECURSIVE) # up
         self.attack_enemy(i - 1, j, HuntType.RECURSIVE) # down
+
+    def shoot_line(self, i, j, i_direction, j_direction):
+        dist = 0
+        hits = 0
+
+        while True:
+            current_i = i + (i_direction * dist)
+            current_j = j + (j_direction * dist)
+
+            if not self.legal_position(current_i, current_j):
+                return hits
+
+            attack_result = self.attack_enemy(current_i, current_j, HuntType.SINGLE_LINE)
+
+            if attack_result is False:
+                return hits
+
+            if self.is_hit(current_i, current_j):
+                hits += 1
+
+            dist += 1
+
+        return hits
+
+    def handle_three_horizontal(self, i, j):
+        """hit three in a line vertically and then eliminate T or Hovercraft, i j should be middle of the three"""
+        pass

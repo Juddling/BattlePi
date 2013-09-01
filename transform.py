@@ -20,14 +20,24 @@ class Matrix:
         """rotates matrix to the left"""
 
         transformed = []
+        height = len(input_matrix)
+        width = len(input_matrix[0])
 
-        for i in range(0, len(input_matrix[0])):
+        for i in range(0, width):
             # add blank cells
             transformed.append([])
 
-        for row_index, row in enumerate(input_matrix):
-            for column_index, cell in enumerate(row):
-                transformed[len(input_matrix) - column_index - 1].append(cell)
+        for row in input_matrix:
+            index = 0
+            for cell in row:
+                # top left should become bottom left
+                column_index = height - 1 - index
+
+                if column_index < 0 or column_index > width:
+                    pass
+
+                transformed[width - 1 - index].append(cell)
+                index+=1
 
         return transformed
 
@@ -53,22 +63,6 @@ class Matrix:
             #self.reflect_x(),
             #self.reflect_y()
         ]
-
-
-def RandomTransform(matrix):
-    rand = randint(1, 4)
-
-    # if rand == 1:
-    #     return matrix
-    # elif rand == 2:
-    #     return RotateLeft(matrix)
-    # elif rand == 3:
-    #     return matrix[::-1]
-    #
-    # return RotateLeft(matrix[::-1])
-
-    return matrix
-
 
 class Ships:
     Carrier = [
@@ -285,27 +279,3 @@ def only_hits(matrix):
             j += 1
         i += 1
     return matrix
-
-test_pattern = [
-    [2,2,2]
-]
-
-m = Matrix(test_pattern)
-
-row_results = match_matrix(test_pattern, [
-    # [1, 1, 1, 1, 1, 1],
-    # [1, 1, 1, 1, 1, 1],
-    # [1, 1, 1, 1, 1, 1],
-    # [1, 1, 1, 1, 1, 1],
-    # [1, 1, 1, 1, 1, 1],
-    # [1, 1, 1, 1, 1, 1],
-    [2, 2, 2, 2, 2, 2],
-    [1, 2, 2, 1, 2, 1],
-    [2, 2, 1, 1, 2, 1],
-    [2, 2, 2, 1, 2, 1],
-    [1, 1, 1, 2, 2, 2],
-    [2, 2, 2, 2, 1, 1],
-])
-
-for r in matches_to_relative_position(row_results):
-    print(r)

@@ -5,7 +5,7 @@ while True:
     Player, Opponent = InitBoards()
 
     try:
-        Player = DeployFleet(Player)
+        Player = DeployFleet(Player, True)
     except RuntimeError as e:
         continue
 

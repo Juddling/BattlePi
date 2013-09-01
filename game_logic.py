@@ -53,10 +53,13 @@ def InitBoards():
     # 4 = Hit (player or opponent)
 
     # Initially, the player's board is all empty, the opponent's is all unknown
-    Player = [[1] * (6 if x < 6 else 12) for x in range(constants.BOARD_HEIGHT)]
+    Player = InitPlayerBoard()
     Opponent = [[0] * (6 if x < 6 else 12) for x in range(constants.BOARD_HEIGHT)]
 
     return Player, Opponent
+
+def InitPlayerBoard(square = 1):
+    return [[square] * (6 if x < 6 else 12) for x in range(constants.BOARD_HEIGHT)]
 
 # Read a move from the keyboard and return board indices
 def GetMove():
@@ -123,14 +126,18 @@ def ChooseAndPrintMove(Opponent):
     return i1, i2
 
 # Distribute the fleet onto your board
-def DeployFleet(Player):
-    ships = transform.raw_ships()
+def DeployFleet(Player, verbose=False):
+    ships = transform.bubble_ships()
+    initial = Player.copy()
 
     for ship in ships:
-        ship = transform.RandomTransform(ship)
-        x, y = ValidPlacement(Player, ship)
+        m = transform.Matrix(ship)
+        ship = m.rotate_n(randint(1,4))
 
-        PrintMove(x, y)
+        x, y = ValidPlacement(Player, ship, verbose)
+
+        if verbose:
+            PrintMove(x, y)
 
         i = 0
         for row in ship:
@@ -143,7 +150,7 @@ def DeployFleet(Player):
 
     return Player
 
-def ValidPlacement(domain, ship):
+def ValidPlacement(domain, ship, verbose=False):
     attempts = 0
     while True:
         if attempts > 10:
@@ -157,15 +164,18 @@ def ValidPlacement(domain, ship):
         if (y + len(ship[0])) > len(domain[x]):
             continue
 
-        print ("doing some checking...")
+        if verbose:
+            print ("doing some checking...")
 
         # collisions
         collision = False
         for row in domain[x:x+len(ship)]:
-            print (row)
+            if verbose:
+                print (row)
 
             if constants.OCCUPIED in row[y:y+len(ship[0])]:
-                print ("collision found")
+                if verbose:
+                    print ("collision found")
                 collision = True
 
         if collision:

@@ -2,6 +2,8 @@ __author__ = 'Judd'
 
 import constants
 from Attack import Attack
+from game_logic import InitPlayerBoard, DeployFleet
+from addition import add_jagged_list
 
 enemy_debug = [
     [1, 1, 1, 1, 1, 1],
@@ -94,18 +96,42 @@ enemy_config5 = [
     [1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1],
 ]
 
-iterations = 1000
+iterations = 100
 csv = ""
 
+# 1: 69.42 then 67.08 - after eliminating horizontal Ts
+
+heat_map = InitPlayerBoard(0)
+
 for i in range(iterations):
-    attack = Attack(enemy_config5)
+    while True:
+        config = InitPlayerBoard()
+        try:
+            DeployFleet(config, False)
+        except RuntimeError:
+            continue
+
+        break
+
+    # for row in config:
+    #     for index, item in enumerate(row):
+    #         if item == 5:
+    #             row[index] = 1
+    #
+    # heat_map = add_jagged_list(heat_map, config)
+
+    attack = Attack(config)
     total = attack.hits + attack.misses
-    csv += str(total) + "\n"
+    csv += str(total) + "," + str(attack.search_misses) + "," + str(attack.misses - attack.search_misses) + "\n"
 
     #if i % 1000 == 0:
     #    print (i)
 
-    print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Repeats: ", attack.repeats)
+    print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Search Hits: ", attack.search_hits,
+          ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses)
 
-with open("results5.csv", 'w') as f:
-    f.write(csv)
+with open("random_boards_lines_bubble.csv", 'w') as f:
+    f.write("total shots,search misses,other misses\n" + csv)
+
+# for row in heat_map:
+#     print (row)
