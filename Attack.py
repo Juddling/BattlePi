@@ -9,6 +9,7 @@ class HuntType:
     RECURSIVE = 2
     SEARCH = 3
     SINGLE_LINE = 4
+    INTELLIGENT = 5
 
 
 class Attack:
@@ -23,6 +24,7 @@ class Attack:
         self.search_misses = 0
         self.true_random = False
         self.neighbours_hunted = []
+        self.sunk_carrier = False
 
         #print (self.view_of_opponent)
 
@@ -255,13 +257,20 @@ class Attack:
                 if hits == 3:
                     # four in a row, now lets eliminate the T shape
 
+                    if self.sunk_carrier:
+                        return
+
                     if j_direction != 0:
                         if not self.attack_above_and_below(current_i, current_j):
-                            self.attack_above_and_below(current_i, current_j - (j_direction * 3))
+                            if self.attack_above_and_below(current_i, current_j - (j_direction * 3)):
+                                self.sunk_carrier = True
+                                return
 
                     if i_direction != 0:
                         if not self.attack_left_and_right(current_i, current_j):
-                            self.attack_left_and_right(current_i - (i_direction * 3), current_j)
+                            if self.attack_left_and_right(current_i - (i_direction * 3), current_j):
+                                self.sunk_carrier = True
+                                return
 
                     # stopping the miss after taking out the four boat
                     return
@@ -270,6 +279,10 @@ class Attack:
                 continue
             else:
                 if j_direction == -1:
+                    if hits == 1:
+                        self.hunt(current_i, current_j+1)
+                        return
+
                     # here should be hunting for 2 boats
                     return
 
@@ -284,8 +297,28 @@ class Attack:
                         # TODO: hit to the left/right of the middle and keep shooting (for T) in that direction until fail
                         # one hit indicates the hovercraft
 
-                        if self.shoot_line(current_i - 2, current_j + 1, 0, 1) == 0:
-                            self.shoot_line(current_i - 2, current_j - 1, 0, -1)
+                        # 2
+                        # 2 X <- shooting here
+                        # 2
+
+
+                        hits_on_t = self.shoot_line(current_i - 2, current_j + 1, 0, 1)
+
+                        if hits_on_t == 1:
+                            self.attack_enemy(current_i - 3, current_j - 1, HuntType.INTELLIGENT)
+                            self.attack_enemy(current_i - 1, current_j - 1, HuntType.INTELLIGENT)
+
+                            # TODO: if both mark hover sunk
+                        elif hits_on_t == 0:
+                            # then shoot the other side!
+
+                            hits_on_t_other = self.shoot_line(current_i - 2, current_j - 1, 0, 1)
+
+                            if hits_on_t == 1:
+                                self.attack_enemy(current_i - 3, current_j + 1, HuntType.INTELLIGENT)
+                                self.attack_enemy(current_i - 1, current_j + 1, HuntType.INTELLIGENT)
+
+                                # TODO: if both mark hover sunk
 
                         pass
 
