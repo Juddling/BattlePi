@@ -25,6 +25,7 @@ class Attack:
         self.true_random = False
         self.neighbours_hunted = []
         self.sunk_carrier = False
+        self.sunk_hovercraft = False
 
         #print (self.view_of_opponent)
 
@@ -279,9 +280,12 @@ class Attack:
                 continue
             else:
                 if j_direction == -1:
-                    if hits == 1:
+                    if hits == 1 and not self.sunk_hovercraft:
                         self.hunt(current_i, current_j+1)
                         return
+
+                    if hits == 2:
+                        self.handle_three_horizontal(current_i, current_j-2)
 
                     # here should be hunting for 2 boats
                     return
@@ -293,37 +297,10 @@ class Attack:
                     # from down to right
 
                     if hits == 2:
-                        # three in a row, fails either end
-                        # TODO: hit to the left/right of the middle and keep shooting (for T) in that direction until fail
-                        # one hit indicates the hovercraft
+                        self.handle_three_vertical(current_i, current_j)
 
-                        # 2
-                        # 2 X <- shooting here
-                        # 2
-
-
-                        hits_on_t = self.shoot_line(current_i - 2, current_j + 1, 0, 1)
-
-                        if hits_on_t == 1:
-                            self.attack_enemy(current_i - 3, current_j - 1, HuntType.INTELLIGENT)
-                            self.attack_enemy(current_i - 1, current_j - 1, HuntType.INTELLIGENT)
-
-                            # TODO: if both mark hover sunk
-                        elif hits_on_t == 0:
-                            # then shoot the other side!
-
-                            hits_on_t_other = self.shoot_line(current_i - 2, current_j - 1, 0, 1)
-
-                            if hits_on_t == 1:
-                                self.attack_enemy(current_i - 3, current_j + 1, HuntType.INTELLIGENT)
-                                self.attack_enemy(current_i - 1, current_j + 1, HuntType.INTELLIGENT)
-
-                                # TODO: if both mark hover sunk
-
-                        pass
-
-                    if hits == 1:
-                        self.hunt(current_i, current_j)
+                    if hits == 1 and not self.sunk_hovercraft:
+                        self.hunt(current_i-1, current_j)
                         return
 
                     if hits > 0:
@@ -337,6 +314,64 @@ class Attack:
 
                 line = 1
                 continue
+
+    def handle_three_vertical(self, i, j):
+        """ i, j relative to middle of the three"""
+
+        #   X   <- shooting here
+        # 2 2 2
+
+        if not self.sunk_carrier or not self.sunk_hovercraft:
+            hits_on_t = self.shoot_line(i - 1, j, 0, 1)
+
+            if hits_on_t == 1:
+                if self.attack_enemy(i + 1, j - 1, HuntType.INTELLIGENT) and self.attack_enemy(i + 1, j + 1, HuntType.INTELLIGENT):
+                    self.sunk_hovercraft = True
+                    return
+
+            elif hits_on_t == 0:
+                # then shoot the other side!
+
+                hits_on_t_other = self.shoot_line(i + 1, j, 0, 1)
+
+                if hits_on_t_other == 1:
+                    if self.attack_enemy(i - 1, j + 1, HuntType.INTELLIGENT) and self.attack_enemy(i - 1, j - 1, HuntType.INTELLIGENT):
+                        self.sunk_hovercraft = True
+                        return
+                elif hits_on_t_other == 3:
+                    self.sunk_carrier = True
+                    return
+
+            elif hits_on_t == 3:
+                self.sunk_carrier = True
+                return
+
+    def handle_three_horizontal(self, i, j):
+        if not self.sunk_carrier or not self.sunk_hovercraft:
+            hits_on_t = self.shoot_line(i - 2, j + 1, 0, 1)
+
+            if hits_on_t == 1:
+                if self.attack_enemy(i - 3, j - 1, HuntType.INTELLIGENT) and self.attack_enemy(i - 1, j - 1, HuntType.INTELLIGENT):
+                    self.sunk_hovercraft = True
+                    return
+
+            elif hits_on_t == 0:
+                # then shoot the other side!
+
+                hits_on_t_other = self.shoot_line(i - 2, j - 1, 0, 1)
+
+                if hits_on_t_other == 1:
+                    if self.attack_enemy(i - 3, j + 1, HuntType.INTELLIGENT) and self.attack_enemy(i - 1, j + 1, HuntType.INTELLIGENT):
+                        self.sunk_hovercraft = True
+                        return
+                elif hits_on_t_other == 3:
+                    self.sunk_carrier = True
+                    return
+
+            elif hits_on_t == 3:
+                self.sunk_carrier = True
+                return
+
 
     def hunt(self, i, j):
         """Surrounds a hit to try and sink a ship"""
@@ -373,7 +408,3 @@ class Attack:
             dist += 1
 
         return hits
-
-    def handle_three_horizontal(self, i, j):
-        """hit three in a line vertically and then eliminate T or Hovercraft, i j should be middle of the three"""
-        pass

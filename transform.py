@@ -223,7 +223,15 @@ def match_matrix(needle, haystack):
 
             i += 1
 
+        # for i in temp_matches:
+        #     for j in i:
+        #         pass
+
         matches.append(group_matches(temp_matches))
+
+    for index, cell in enumerate(matches):
+        if cell == []:
+            matches.pop(index)
 
     return matches
 
