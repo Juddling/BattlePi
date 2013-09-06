@@ -33,6 +33,7 @@ class Attack:
             i, j = self.random()
 
             if self.repeats >= 500:
+                raise RuntimeError('Reverted to random shooting')
                 # TODO: get rid of this, revert to shooting neighbours of existing hits
                 self.true_random = True
 
@@ -71,6 +72,8 @@ class Attack:
     def eliminated(self, i, j):
         """can square be eliminated because all neighbours are known"""
 
+        return False
+
         neighbours = [
             [i - 1, j],
             [i + 1, j],
@@ -108,9 +111,11 @@ class Attack:
 
         if self.repeat_check(i, j):
             if self.is_hit(i, j):
-                self.hunt(i, j)
+                if attack_type == HuntType.RECURSIVE:
+                    self.hunt(i, j)
+                    return
 
-            return
+                return True
 
         if self.enemy_config[i][j] == constants.OCCUPIED:
             self.hits += 1
@@ -262,12 +267,14 @@ class Attack:
                         return
 
                     if j_direction != 0:
+                        #horizontal four
                         if not self.attack_above_and_below(current_i, current_j):
                             if self.attack_above_and_below(current_i, current_j - (j_direction * 3)):
                                 self.sunk_carrier = True
                                 return
 
                     if i_direction != 0:
+                        #vertical four
                         if not self.attack_left_and_right(current_i, current_j):
                             if self.attack_left_and_right(current_i - (i_direction * 3), current_j):
                                 self.sunk_carrier = True
@@ -297,9 +304,10 @@ class Attack:
                     # from down to right
 
                     if hits == 2:
-                        self.handle_three_vertical(current_i, current_j)
+                        self.handle_three_vertical(current_i-2, current_j)
 
                     if hits == 1 and not self.sunk_hovercraft:
+                        # two boat, start hunting
                         self.hunt(current_i-1, current_j)
                         return
 

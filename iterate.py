@@ -96,7 +96,7 @@ enemy_config5 = [
     [1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1],
 ]
 
-iterations = 100
+iterations = 1
 csv = ""
 
 # 1: 69.42 then 67.08 - after eliminating horizontal Ts
@@ -104,14 +104,16 @@ csv = ""
 heat_map = InitPlayerBoard(0)
 
 for i in range(iterations):
-    while True:
-        config = InitPlayerBoard()
-        try:
-            DeployFleet(config, False)
-        except RuntimeError:
-            continue
+    # while True:
+    #     config = InitPlayerBoard()
+    #     try:
+    #         DeployFleet(config, False)
+    #     except RuntimeError:
+    #         continue
+    #
+    #     break
 
-        break
+    config = [[1, 5, 5, 5, 5, 5], [1, 5, 2, 2, 2, 5], [1, 5, 5, 5, 5, 5], [5, 5, 5, 5, 2, 5], [5, 2, 2, 2, 2, 5], [5, 5, 5, 5, 2, 5], [1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5], [1, 1, 5, 2, 2, 2, 2, 5, 2, 1, 2, 5], [1, 1, 5, 5, 5, 5, 5, 5, 2, 2, 2, 5], [1, 5, 5, 5, 5, 1, 1, 5, 1, 2, 1, 5], [1, 5, 2, 2, 5, 1, 1, 5, 5, 5, 5, 5], [1, 5, 5, 5, 5, 1, 1, 1, 1, 1, 1, 1]]
 
     # for row in config:
     #     for index, item in enumerate(row):
