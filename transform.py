@@ -204,34 +204,41 @@ def match_row(needle, haystack):
         i += 1
 
 
+def match_matrix_same_height(needle, haystack):
+    if len(needle) != len(haystack):
+        raise RuntimeError('matrices should be same height')
+
+    temp_matches = []
+
+    i = 0
+    for row in needle:
+        row_matches = match_row(row, haystack[i])
+
+        if row_matches:
+            temp_matches.append(row_matches)
+        else:
+            temp_matches.append(-1)
+
+        i += 1
+
+    return temp_matches
+
+
 def match_matrix(needle, haystack):
     """matches a pattern against a ship, right now pattern and ship must have the same height"""
 
     matches = []
 
     for j in range(len(haystack) - len(needle) + 1):
-        temp_matches = []
+        ungrouped = match_matrix_same_height(needle, haystack[j:j + len(needle)])
+        positions = matches_to_relative_position(group_matches(ungrouped), j)
 
-        i = 0
-        for row in needle:
-            row_matches = match_row(row, haystack[j + i])
+        for p in positions:
+            matches.append(p)
 
-            if row_matches:
-                temp_matches.append(row_matches)
-            else:
-                temp_matches.append(-1)
-
-            i += 1
-
-        # for i in temp_matches:
-        #     for j in i:
-        #         pass
-
-        matches.append(group_matches(temp_matches))
-
-    for index, cell in enumerate(matches):
-        if cell == []:
-            matches.pop(index)
+    # for index, cell in enumerate(matches):
+    #     if cell == []:
+    #         matches.pop(index)
 
     return matches
 
@@ -241,9 +248,13 @@ def group_matches(matches):
 
     cols = []
 
+
     for row in matches:
+        # expand the generator
+        row_expanded = [x for x in row]
+
         if not cols:
-            cols = [x for x in row]
+            cols = row_expanded[:]
 
             if not cols:
                 # if cols still empty after first run, then there can be no values in all columns
@@ -251,22 +262,19 @@ def group_matches(matches):
 
             continue
 
-        for col in cols:
+        for col in cols[:]:
+            # if you remove an element, python doesn't iterate to the true end of the list, so iterate through a copy
             # if column is not contained in next row, remove it
-            if col not in row:
+
+            # can't check if element is in a generator
+            if col not in row_expanded:
                 cols.remove(col)
 
     return cols
 
-def matches_to_relative_position(matches):
-    pos = []
-    j = 0
-
-    for row in matches:
-        for i in row:
-            yield (i, j)
-
-        j += 1
+def matches_to_relative_position(matches, j):
+    for i in matches:
+        yield (i, j)
 
 def heat_map(matches, haystack):
     # TODO: tweak the haystacks according to the tuples in matches
