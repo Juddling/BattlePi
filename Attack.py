@@ -73,8 +73,6 @@ class Attack:
     def eliminated(self, i, j):
         """can square be eliminated because all neighbours are known"""
 
-        #return False
-
         neighbours = [
             [i - 1, j],
             [i + 1, j],
@@ -85,7 +83,8 @@ class Attack:
         count = 0
 
         for square in neighbours:
-
+            if self.legal_position(square[0], square[1]) and self.is_hit(square[0], square[1]):
+                return False
 
             if not self.legal_position(square[0], square[1]) or self.is_empty(square[0], square[1]):
                 count += 1
@@ -413,7 +412,8 @@ class Attack:
 
             attack_result = self.attack_enemy(current_i, current_j, HuntType.SINGLE_LINE)
 
-            if attack_result is False:
+            if not attack_result:
+                # None / False
                 return hits
 
             if self.is_hit(current_i, current_j):

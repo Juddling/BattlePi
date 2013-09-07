@@ -113,6 +113,7 @@ for i in range(iterations):
 
         break
 
+
     # for row in config:
     #     for index, item in enumerate(row):
     #         if item == 5:
