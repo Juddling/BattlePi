@@ -35,7 +35,6 @@ enemy_config2 = [
     [2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1],
 ]
 
-#average 79 down to 62.1
 enemy_config3 = [
     [1, 1, 1, 1, 1, 1],
     [1, 2, 1, 1, 1, 1],
@@ -164,7 +163,7 @@ for i in range(iterations):
     #
     # heat_map = add_jagged_list(heat_map, config)
 
-    attack = Attack(enemy_config5, HuntType.RECURSIVE)
+    attack = Attack(enemy_config5, HuntType.LINES)
     total = attack.hits + attack.misses
     csv += str(total) + "," + str(attack.search_misses) + "," + str(attack.misses - attack.search_misses) + "\n"
 
@@ -174,7 +173,7 @@ for i in range(iterations):
     print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Search Hits: ", attack.search_hits,
           ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses)
 
-with open("5neighbour.csv", 'w') as f:
+with open("5lines.csv", 'w') as f:
     f.write("total shots,search misses,other misses\n" + csv)
 
 # for row in heat_map:

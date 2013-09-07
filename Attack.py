@@ -297,7 +297,7 @@ class Attack:
             else:
                 if j_direction == -1:
                     if hits == 1 and not self.sunk_hovercraft:
-                        self.hunt(current_i, current_j+1)
+                        self.handle_two_horizontal(current_i, current_j-1)
                         return
 
                     if hits == 2:
@@ -317,7 +317,7 @@ class Attack:
 
                     if hits == 1 and not self.sunk_hovercraft:
                         # two boat, start hunting
-                        self.hunt(current_i-1, current_j)
+                        self.handle_two_vertical(current_i-2, current_j)
                         return
 
                     if hits > 0:
@@ -390,6 +390,97 @@ class Attack:
                 self.sunk_carrier = True
                 return
 
+    def handle_two_vertical(self, i, j):
+        top_left = self.attack_enemy(i, j-1, HuntType.INTELLIGENT)
+        top_right = self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
+
+        if top_left and top_right:
+            self.destroy_hovercraft_vertical(i, j, False)
+            return
+        elif top_left and not top_right:
+            self.destroy_hovercraft_vertical(i, j-1, True)
+            return
+        elif not top_left and top_right:
+            self.destroy_hovercraft_vertical(i, j+1, True)
+            return
+        else:
+            bottom_left = self.attack_enemy(i+1, j-1, HuntType.INTELLIGENT)
+            bottom_right = self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
+
+            if bottom_left and bottom_right:
+                self.destroy_hovercraft_vertical(i+1, j, True)
+                return
+            elif bottom_left and not bottom_right:
+                self.destroy_hovercraft_vertical(i+1, j-1, False)
+                return
+            elif not bottom_left and bottom_right:
+                self.destroy_hovercraft_vertical(i+1, j+1, False)
+                return
+
+    def handle_two_horizontal(self, i, j):
+        """ i, j should be the left of the horizontal"""
+
+        top_left = self.attack_enemy(i-1, j, HuntType.INTELLIGENT)
+        bottom_left = self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
+
+        if top_left and bottom_left:
+            self.destroy_hovercraft_horizontal(i, j, False)
+            return
+        elif top_left and not bottom_left:
+            self.destroy_hovercraft_horizontal(i-1, j, True)
+            return
+        elif not top_left and bottom_left:
+            self.destroy_hovercraft_horizontal(i+1, j, True)
+            return
+        else:
+            top_right = self.attack_enemy(i-1, j+1, HuntType.INTELLIGENT)
+            bottom_right = self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
+
+            if top_right and bottom_right:
+                self.destroy_hovercraft_horizontal(i, j+1, True)
+                return
+            elif top_right and not bottom_right:
+                self.destroy_hovercraft_horizontal(i-1, j+1, False)
+                return
+            elif not top_right and bottom_right:
+                self.destroy_hovercraft_horizontal(i+1, j+1, False)
+                return
+
+    def destroy_hovercraft_vertical(self, i, j, facing_up):
+        """ i,j should be the middle of the three """
+
+        if facing_up:
+            self.attack_enemy(i-1, j, HuntType.INTELLIGENT)
+            self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
+            self.attack_enemy(i, j-1, HuntType.INTELLIGENT)
+            self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
+            self.attack_enemy(i+1, j-1, HuntType.INTELLIGENT)
+        else:
+            self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
+            self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
+            self.attack_enemy(i, j-1, HuntType.INTELLIGENT)
+            self.attack_enemy(i-1, j+1, HuntType.INTELLIGENT)
+            self.attack_enemy(i-1, j-1, HuntType.INTELLIGENT)
+
+        self.sunk_hovercraft = True
+
+    def destroy_hovercraft_horizontal(self, i, j, facing_left):
+        """ i,j should be the middle of the three """
+
+        if facing_left:
+            self.attack_enemy(i-1, j, HuntType.INTELLIGENT)
+            self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
+            self.attack_enemy(i, j-1, HuntType.INTELLIGENT)
+            self.attack_enemy(i-1, j+1, HuntType.INTELLIGENT)
+            self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
+        else:
+            self.attack_enemy(i-1, j, HuntType.INTELLIGENT)
+            self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
+            self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
+            self.attack_enemy(i-1, j-1, HuntType.INTELLIGENT)
+            self.attack_enemy(i+1, j-1, HuntType.INTELLIGENT)
+
+        self.sunk_hovercraft = True
 
     def hunt(self, i, j):
         """Surrounds a hit to try and sink a ship"""
