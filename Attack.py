@@ -13,9 +13,10 @@ class HuntType:
 
 
 class Attack:
-    def __init__(self, enemy_config):
+    def __init__(self, enemy_config, attack_type):
         self.view_of_opponent = [[constants.UNKNOWN] * (6 if x < 6 else 12) for x in range(constants.BOARD_HEIGHT)]
 
+        self.default_attack_type = attack_type
         self.hits = 0
         self.misses = 0
         self.repeats = 0
@@ -127,7 +128,11 @@ class Attack:
 
             if attack_type == HuntType.SEARCH:
                 self.search_hits += 1
-                self.shoot_lines(i, j)
+
+                if self.default_attack_type == HuntType.LINES:
+                    self.shoot_lines(i, j)
+                else:
+                    self.hunt(i, j)
 
             if attack_type == HuntType.RECURSIVE:
                 self.hunt(i, j)
