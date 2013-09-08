@@ -180,8 +180,8 @@ def slice_overlap(listin, n):
 
 
 def match_match_single(x, y):
-    if x == constants.UNKNOWN or y == constants.UNKNOWN:
-        return True
+    # if x == constants.UNKNOWN or y == constants.UNKNOWN:
+    #     return True
 
     return x == y
 
@@ -225,7 +225,7 @@ def match_matrix_same_height(needle, haystack):
 
 
 def match_matrix(needle, haystack):
-    """matches a pattern against a ship, right now pattern and ship must have the same height"""
+    """matches a pattern against a ship"""
 
     matches = []
 

@@ -2,6 +2,7 @@ __author__ = 'Judd'
 
 from random import randint, shuffle
 import constants
+import transform
 
 
 class HuntType:
@@ -26,6 +27,7 @@ class Attack:
         self.search_misses = 0
         self.true_random = False
         self.neighbours_hunted = []
+        self.eliminated_points = []
         self.sunk_carrier = False
         self.sunk_hovercraft = False
         self.sunk_two_boat = False
@@ -35,17 +37,14 @@ class Attack:
         while self.hits < constants.TOTAL_HITS:
             i, j = self.random()
 
+            if self.hits == 20:
+                self.hunt_existing_hits()
+                break
+
             # if self.repeats >= 500:
             #     raise RuntimeError('Reverted to random shooting')
             #     # TODO: get rid of this, revert to shooting neighbours of existing hits
             #     self.true_random = True
-
-            if self.repeats >= 5000:
-                #defintely a fuck up
-                raise RuntimeError('Too many repeats!')
-
-            if self.repeat_check(i, j):
-                continue
 
             self.attack_enemy(i, j, HuntType.SEARCH)
 
@@ -54,7 +53,17 @@ class Attack:
 
         pass
 
+    def hunt_existing_hits(self):
+        for i, row in enumerate(self.view_of_opponent):
+            for j, cell in enumerate(row):
+                if self.is_hit(i, j):
+                    self.hunt(i, j)
+
     def repeat_check(self, i, j):
+        if self.repeats >= 5000:
+            #defintely a fuck up
+            raise RuntimeError('Too many repeats!')
+
         if self.view_of_opponent[i][j] != constants.UNKNOWN:
             self.repeats += 1
             return True
@@ -119,11 +128,12 @@ class Attack:
 
         if self.repeat_check(i, j):
             if self.is_hit(i, j):
-                if attack_type == HuntType.RECURSIVE:
+                if attack_type == HuntType.RECURSIVE or attack_type == HuntType.INTELLIGENT:
                     self.hunt(i, j)
                     return
 
-                return True
+                # used to return True in this case
+                return
 
             return
 
@@ -171,10 +181,44 @@ class Attack:
                 if i % 2 == 1 and j % 2 == 0:
                     continue
 
+            if self.repeat_check(i, j):
+                continue
+
             if self.eliminated(i, j):
                 continue
 
+            if self.uber_eliminate(i, j):
+                continue
+
             return i, j
+
+    def uber_eliminate(self, rand_i, rand_j):
+        matches = transform.match_matrix([[0,0,0]], self.view_of_opponent)
+        allowed_points =  []
+
+        if not self.sunk_two_boat or not self.sunk_carrier:
+            return False
+
+        for j, i in matches: # reversed on purpose
+            allowed_points.append((i, j))
+            allowed_points.append((i, j+1))
+            allowed_points.append((i, j+2))
+
+        matches = transform.match_matrix([[0],[0],[0]], self.view_of_opponent)
+
+        for j, i in matches: # reversed on purpose
+            allowed_points.append((i, j))
+            allowed_points.append((i+1, j))
+            allowed_points.append((i+2, j))
+
+        unique_points = list(set(allowed_points))
+
+        if (rand_i, rand_j) in unique_points:
+            return False
+
+        self.eliminated_points.append((rand_i, rand_j))
+
+        return True
 
     def markers(self):
         """center of each 3x3 sudoku square"""
@@ -242,8 +286,8 @@ class Attack:
         return self.view_of_opponent[i][j] == constants.UNOCCUPIED
 
     def attack_above_and_below(self, i, j):
-        if self.attack_enemy(i + 1, j, HuntType.LINES):
-            if self.attack_enemy(i - 1, j, HuntType.LINES):
+        if self.attack_enemy(i + 1, j, HuntType.INTELLIGENT):
+            if self.attack_enemy(i - 1, j, HuntType.INTELLIGENT):
                 return True
             else:
                 # four in a row, then one was a hit and the other side wasn't... must be touching shapes... hunt!
@@ -252,8 +296,8 @@ class Attack:
         return False
 
     def attack_left_and_right(self, i, j):
-        if self.attack_enemy(i, j + 1, HuntType.LINES):
-            if self.attack_enemy(i, j - 1, HuntType.LINES):
+        if self.attack_enemy(i, j + 1, HuntType.INTELLIGENT):
+            if self.attack_enemy(i, j - 1, HuntType.INTELLIGENT):
                 return True
             else:
                 # four in a row, then one was a hit and the other side wasn't... must be touching shapes... hunt!
@@ -436,27 +480,23 @@ class Attack:
         top_right = self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
 
         if top_left and top_right:
-            self.destroy_hovercraft_vertical(i, j, False)
-            return
+            self.destroy_hovercraft([(i-1,j-1),(i-1,j+1)], i, j)
         elif top_left and not top_right:
-            self.destroy_hovercraft_vertical(i, j-1, True)
-            return
+            self.destroy_hovercraft([(i-1,j-1),(i,j-2),(i+1,j-2)], i, j)
         elif not top_left and top_right:
-            self.destroy_hovercraft_vertical(i, j+1, True)
-            return
+            self.destroy_hovercraft([(i-1,j+1),(i,j+2),(i+1,j+2)], i, j)
         else:
             bottom_left = self.attack_enemy(i+1, j-1, HuntType.INTELLIGENT)
             bottom_right = self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
 
             if bottom_left and bottom_right:
-                self.destroy_hovercraft_vertical(i+1, j, True)
-                return
+                self.destroy_hovercraft([(i+2,j+1),(i+2,j-1)], i, j)
             elif bottom_left and not bottom_right:
-                self.destroy_hovercraft_vertical(i+1, j-1, False)
-                return
+                self.destroy_hovercraft([(i,j-2),(i+1,j-2),(i+2,j-1)], i, j)
             elif not bottom_left and bottom_right:
-                self.destroy_hovercraft_vertical(i+1, j+1, False)
-                return
+                self.destroy_hovercraft([(i,j+2),(i+1,j+2),(i+2,j+1)], i, j)
+            else:
+                self.sunk_two_boat = True
 
     def handle_two_horizontal(self, i, j):
         """ i, j should be the left of the horizontal"""
@@ -465,66 +505,29 @@ class Attack:
         bottom_left = self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
 
         if top_left and bottom_left:
-            self.destroy_hovercraft_horizontal(i, j, False)
+            self.destroy_hovercraft([(i-1,j-1),(i+1,j-1)], i, j)
             return
         elif top_left and not bottom_left:
-            self.destroy_hovercraft_horizontal(i-1, j, True)
+            self.destroy_hovercraft([(i-1,j-1),(i-2,j),(i-2,j+1)], i, j)
             return
         elif not top_left and bottom_left:
-            self.destroy_hovercraft_horizontal(i+1, j, True)
+            self.destroy_hovercraft([(i+1,j-1),(i+2,j),(i+2,j+1)], i, j)
             return
         else:
             top_right = self.attack_enemy(i-1, j+1, HuntType.INTELLIGENT)
             bottom_right = self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
 
             if top_right and bottom_right:
-                self.destroy_hovercraft_horizontal(i, j+1, True)
+                self.destroy_hovercraft([(i-1,j+2),(i+1,j+2)], i, j)
                 return
             elif top_right and not bottom_right:
-                self.destroy_hovercraft_horizontal(i-1, j+1, False)
+                self.destroy_hovercraft([(i-1,j+2),(i-2,j),(i-2,j+1)], i, j)
                 return
             elif not top_right and bottom_right:
-                self.destroy_hovercraft_horizontal(i+1, j+1, False)
+                self.destroy_hovercraft([(i+1,j+2),(i+2,j),(i+2,j+1)], i, j)
                 return
-
-    def destroy_hovercraft_vertical(self, i, j, facing_up):
-        """ i,j should be the middle of the three """
-
-        co_ords = []
-
-        if facing_up:
-            co_ords.append((i-1, j))
-            co_ords.append((i, j+1))
-            co_ords.append((i, j-1))
-            co_ords.append((i+1, j+1))
-            co_ords.append((i+1, j-1))
-        else:
-            co_ords.append((i+1, j))
-            co_ords.append((i, j+1))
-            co_ords.append((i, j-1))
-            co_ords.append((i-1, j+1))
-            co_ords.append((i-1, j-1))
-
-        self.destroy_hovercraft(co_ords, i, j)
-
-    def destroy_hovercraft_horizontal(self, i, j, facing_left):
-        """ i,j should be the middle of the three """
-        co_ords = []
-
-        if facing_left:
-            co_ords.append((i-1, j))
-            co_ords.append((i+1, j))
-            co_ords.append((i, j-1))
-            co_ords.append((i-1, j+1))
-            co_ords.append((i+1, j+1))
-        else:
-            co_ords.append((i-1, j))
-            co_ords.append((i+1, j))
-            co_ords.append((i, j+1))
-            co_ords.append((i-1, j-1))
-            co_ords.append((i+1, j-1))
-
-        self.destroy_hovercraft(co_ords, i, j)
+            else:
+                self.sunk_two_boat = True
 
     def destroy_hovercraft(self, co_ords, initial_i, initial_j):
         for i,j in co_ords:
@@ -555,6 +558,13 @@ class Attack:
         while True:
             if hits == 3:
                 break
+
+            if hits == 1:
+                if i_direction != 0 and not self.legal_position(i + (2 * i_direction), j):
+                    break
+
+                if j_direction != 0 and not self.legal_position(i, j + (2 * j_direction)):
+                    break
 
             current_i = i + (i_direction * dist)
             current_j = j + (j_direction * dist)

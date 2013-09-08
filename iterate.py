@@ -155,7 +155,7 @@ enemy_config10 = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
-iterations = 25
+iterations = 100
 csv = ""
 
 heat_map = InitPlayerBoard(0)
@@ -177,18 +177,19 @@ for i in range(iterations):
     #
     # heat_map = add_jagged_list(heat_map, config)
 
-    #config = [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 2], [1, 1, 2, 2, 2, 2], [2, 2, 1, 2, 1, 2], [1, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1, 1], [2, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1], [1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1], [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
-    attack = Attack(config, HuntType.LINES)
+    attack = Attack(enemy_config10, HuntType.LINES)
     total = attack.hits + attack.misses
     csv += str(total) + "," + str(attack.search_misses) + "," + str(attack.misses - attack.search_misses) + "\n"
 
     #if i % 1000 == 0:
     #    print (i)
 
-    print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Search Hits: ", attack.search_hits,
-          ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses)
+    unique = set(attack.eliminated_points)
 
-with open("random_lines.csv", 'w') as f:
+    print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Search Hits: ", attack.search_hits,
+          ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses, " Elim: ", len(unique))
+
+with open("lines10.csv", 'w') as f:
     f.write("total shots,search misses,other misses\n" + csv)
 
 # for row in heat_map:
