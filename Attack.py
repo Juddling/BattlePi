@@ -27,6 +27,7 @@ class Attack:
         self.neighbours_hunted = []
         self.sunk_carrier = False
         self.sunk_hovercraft = False
+        self.sunk_two_boat = False
 
         #print (self.view_of_opponent)
 
@@ -106,6 +107,9 @@ class Attack:
         return False
 
     def attack_enemy(self, i, j, attack_type):
+        if i == 10 and j == 10:
+            pass
+
         if self.hits >= constants.TOTAL_HITS:
             return
 
@@ -264,6 +268,14 @@ class Attack:
         while True:
             current_i = i + (line * i_direction)
             current_j = j + (line * j_direction)
+
+            if self.legal_position(current_i, current_j) and self.is_hit(current_i, current_j):
+                # if where you plan to shoot is already a hit, it's touching ships as the strategy now eliminates
+                # ships as it finds them
+
+                self.hunt(i, j)
+                return
+
             attack_result = self.attack_enemy(current_i, current_j, HuntType.LINES)
 
             if attack_result:
@@ -296,8 +308,16 @@ class Attack:
                 continue
             else:
                 if j_direction == -1:
-                    if hits == 1 and not self.sunk_hovercraft:
-                        self.handle_two_horizontal(current_i, current_j-1)
+                    if hits == 1:
+                        if not self.sunk_hovercraft:
+                            self.handle_two_horizontal(current_i, current_j+1)
+                        else:
+                            if not self.sunk_two_boat:
+                                self.sunk_two_boat = True
+                            else:
+                                # already sunk the two boat, something's wrong...
+                                self.hunt(current_i, current_j+1)
+
                         return
 
                     if hits == 2:
@@ -315,10 +335,15 @@ class Attack:
                     if hits == 2:
                         self.handle_three_vertical(current_i-2, current_j)
 
-                    if hits == 1 and not self.sunk_hovercraft:
-                        # two boat, start hunting
-                        self.handle_two_vertical(current_i-2, current_j)
-                        return
+                    if hits == 1:
+                        if not self.sunk_hovercraft:
+                            self.handle_two_vertical(current_i-2, current_j)
+                        else:
+                            if not self.sunk_two_boat:
+                                self.sunk_two_boat = True
+                            else:
+                                # already sunk the two boat, something's wrong...
+                                self.hunt(current_i, current_j-2)
 
                     if hits > 0:
                         return
@@ -449,36 +474,46 @@ class Attack:
     def destroy_hovercraft_vertical(self, i, j, facing_up):
         """ i,j should be the middle of the three """
 
-        if facing_up:
-            self.attack_enemy(i-1, j, HuntType.INTELLIGENT)
-            self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
-            self.attack_enemy(i, j-1, HuntType.INTELLIGENT)
-            self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
-            self.attack_enemy(i+1, j-1, HuntType.INTELLIGENT)
-        else:
-            self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
-            self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
-            self.attack_enemy(i, j-1, HuntType.INTELLIGENT)
-            self.attack_enemy(i-1, j+1, HuntType.INTELLIGENT)
-            self.attack_enemy(i-1, j-1, HuntType.INTELLIGENT)
+        co_ords = []
 
-        self.sunk_hovercraft = True
+        if facing_up:
+            co_ords.append((i-1, j))
+            co_ords.append((i, j+1))
+            co_ords.append((i, j-1))
+            co_ords.append((i+1, j+1))
+            co_ords.append((i+1, j-1))
+        else:
+            co_ords.append((i+1, j))
+            co_ords.append((i, j+1))
+            co_ords.append((i, j-1))
+            co_ords.append((i-1, j+1))
+            co_ords.append((i-1, j-1))
+
+        self.destroy_hovercraft(co_ords)
 
     def destroy_hovercraft_horizontal(self, i, j, facing_left):
         """ i,j should be the middle of the three """
+        co_ords = []
 
         if facing_left:
-            self.attack_enemy(i-1, j, HuntType.INTELLIGENT)
-            self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
-            self.attack_enemy(i, j-1, HuntType.INTELLIGENT)
-            self.attack_enemy(i-1, j+1, HuntType.INTELLIGENT)
-            self.attack_enemy(i+1, j+1, HuntType.INTELLIGENT)
+            co_ords.append((i-1, j))
+            co_ords.append((i+1, j))
+            co_ords.append((i, j-1))
+            co_ords.append((i-1, j+1))
+            co_ords.append((i+1, j+1))
         else:
-            self.attack_enemy(i-1, j, HuntType.INTELLIGENT)
-            self.attack_enemy(i+1, j, HuntType.INTELLIGENT)
-            self.attack_enemy(i, j+1, HuntType.INTELLIGENT)
-            self.attack_enemy(i-1, j-1, HuntType.INTELLIGENT)
-            self.attack_enemy(i+1, j-1, HuntType.INTELLIGENT)
+            co_ords.append((i-1, j))
+            co_ords.append((i+1, j))
+            co_ords.append((i, j+1))
+            co_ords.append((i-1, j-1))
+            co_ords.append((i+1, j-1))
+
+        self.destroy_hovercraft(co_ords)
+
+    def destroy_hovercraft(self, co_ords):
+        for i,j in co_ords:
+            if not self.attack_enemy(i, j, HuntType.INTELLIGENT):
+                return
 
         self.sunk_hovercraft = True
 
@@ -500,6 +535,9 @@ class Attack:
         hits = 0
 
         while True:
+            if hits == 3:
+                break
+
             current_i = i + (i_direction * dist)
             current_j = j + (j_direction * dist)
 
