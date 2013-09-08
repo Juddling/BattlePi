@@ -22,6 +22,7 @@ class Attack:
         self.repeats = 0
         self.enemy_config = enemy_config
         self.search_hits = 0
+        self.search_hit_list = []
         self.search_misses = 0
         self.true_random = False
         self.neighbours_hunted = []
@@ -107,7 +108,7 @@ class Attack:
         return False
 
     def attack_enemy(self, i, j, attack_type):
-        if i == 10 and j == 10:
+        if i == 6 and j == 2:
             pass
 
         if self.hits >= constants.TOTAL_HITS:
@@ -132,6 +133,7 @@ class Attack:
 
             if attack_type == HuntType.SEARCH:
                 self.search_hits += 1
+                self.search_hit_list.append((i, j))
 
                 if self.default_attack_type == HuntType.LINES:
                     self.shoot_lines(i, j)
@@ -293,6 +295,9 @@ class Attack:
                             if self.attack_above_and_below(current_i, current_j - (j_direction * 3)):
                                 self.sunk_carrier = True
                                 return
+                        else:
+                            self.sunk_carrier = True
+                            return
 
                     if i_direction != 0:
                         #vertical four
@@ -300,6 +305,9 @@ class Attack:
                             if self.attack_left_and_right(current_i - (i_direction * 3), current_j):
                                 self.sunk_carrier = True
                                 return
+                        else:
+                            self.sunk_carrier = True
+                            return
 
                     # stopping the miss after taking out the four boat
                     return
@@ -366,6 +374,8 @@ class Attack:
                 if self.attack_enemy(i + 1, j + 1, HuntType.INTELLIGENT) and self.attack_enemy(i - 1, j + 1, HuntType.INTELLIGENT):
                     self.sunk_hovercraft = True
                     return
+                else:
+                    self.hunt(i, j)
 
             elif hits_on_t == 0:
                 # then shoot the other side!
@@ -376,6 +386,8 @@ class Attack:
                     if self.attack_enemy(i + 1, j - 1, HuntType.INTELLIGENT) and self.attack_enemy(i - 1, j - 1, HuntType.INTELLIGENT):
                         self.sunk_hovercraft = True
                         return
+                    else:
+                        self.hunt(i, j)
                 elif hits_on_t_other == 3:
                     self.sunk_carrier = True
                     return
@@ -396,6 +408,10 @@ class Attack:
             if hits_on_t == 1:
                 if self.attack_enemy(i + 1, j - 1, HuntType.INTELLIGENT) and self.attack_enemy(i + 1, j + 1, HuntType.INTELLIGENT):
                     self.sunk_hovercraft = True
+                    return
+                else:
+                    # only one hit but not the hovercraft
+                    self.hunt(i, j)
                     return
 
             elif hits_on_t == 0:
@@ -489,7 +505,7 @@ class Attack:
             co_ords.append((i-1, j+1))
             co_ords.append((i-1, j-1))
 
-        self.destroy_hovercraft(co_ords)
+        self.destroy_hovercraft(co_ords, i, j)
 
     def destroy_hovercraft_horizontal(self, i, j, facing_left):
         """ i,j should be the middle of the three """
@@ -508,11 +524,13 @@ class Attack:
             co_ords.append((i-1, j-1))
             co_ords.append((i+1, j-1))
 
-        self.destroy_hovercraft(co_ords)
+        self.destroy_hovercraft(co_ords, i, j)
 
-    def destroy_hovercraft(self, co_ords):
+    def destroy_hovercraft(self, co_ords, initial_i, initial_j):
         for i,j in co_ords:
             if not self.attack_enemy(i, j, HuntType.INTELLIGENT):
+                # if suggested co ord is already hit, hunt
+                self.hunt(initial_i, initial_j)
                 return
 
         self.sunk_hovercraft = True
@@ -543,6 +561,13 @@ class Attack:
 
             if not self.legal_position(current_i, current_j):
                 return hits
+            else:
+                if self.is_hit(current_i, current_j):
+                    # if where you plan to shoot is already a hit, it's touching ships as the strategy now eliminates
+                    # ships as it finds them
+
+                    self.hunt(current_i, current_j)
+                    return
 
             attack_result = self.attack_enemy(current_i, current_j, HuntType.SINGLE_LINE)
 

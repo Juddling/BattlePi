@@ -155,21 +155,20 @@ enemy_config10 = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
-iterations = 100
+iterations = 25
 csv = ""
 
 heat_map = InitPlayerBoard(0)
 
 for i in range(iterations):
-    # while True:
-    #     config = InitPlayerBoard()
-    #     try:
-    #         DeployFleet(config, False)
-    #     except RuntimeError:
-    #         continue
-    #
-    #     break
+    while True:
+        config = InitPlayerBoard()
+        try:
+            DeployFleet(config, False)
+        except RuntimeError:
+            continue
 
+        break
 
     # for row in config:
     #     for index, item in enumerate(row):
@@ -178,7 +177,8 @@ for i in range(iterations):
     #
     # heat_map = add_jagged_list(heat_map, config)
 
-    attack = Attack(enemy_config4, HuntType.LINES)
+    #config = [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 2], [1, 1, 2, 2, 2, 2], [2, 2, 1, 2, 1, 2], [1, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1, 1], [2, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1], [1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1], [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+    attack = Attack(config, HuntType.LINES)
     total = attack.hits + attack.misses
     csv += str(total) + "," + str(attack.search_misses) + "," + str(attack.misses - attack.search_misses) + "\n"
 
@@ -188,7 +188,7 @@ for i in range(iterations):
     print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Search Hits: ", attack.search_hits,
           ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses)
 
-with open("4lines.csv", 'w') as f:
+with open("random_lines.csv", 'w') as f:
     f.write("total shots,search misses,other misses\n" + csv)
 
 # for row in heat_map:
