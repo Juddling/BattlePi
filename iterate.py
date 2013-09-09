@@ -148,14 +148,14 @@ enemy_config10 = [
     [1, 2, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 1],
     [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1],
     [1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
-iterations = 100
+iterations = 1000
 csv = ""
 
 heat_map = InitPlayerBoard(0)
@@ -187,7 +187,8 @@ for i in range(iterations):
     unique = set(attack.eliminated_points)
 
     print("Hits: ", attack.hits, ", Misses: ", attack.misses, ", Search Hits: ", attack.search_hits,
-          ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses, " Elim: ", len(unique))
+          ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses,
+          " Elim: ", len(unique), " 36 search: ", attack.thirty_six_search)
 
 with open("lines10.csv", 'w') as f:
     f.write("total shots,search misses,other misses\n" + csv)

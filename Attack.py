@@ -26,6 +26,7 @@ class Attack:
         self.search_hit_list = []
         self.search_misses = 0
         self.true_random = False
+        self.thirty_six_search = False
         self.neighbours_hunted = []
         self.eliminated_points = []
         self.sunk_carrier = False
@@ -181,6 +182,10 @@ class Attack:
                 if i % 2 == 1 and j % 2 == 0:
                     continue
 
+            if self.sunk_two_boat and (self.search_misses + self.search_misses) <= 30:
+                self.thirty_six_search = True
+                i, j = self.thirty_six()
+
             if self.repeat_check(i, j):
                 continue
 
@@ -219,6 +224,48 @@ class Attack:
         self.eliminated_points.append((rand_i, rand_j))
 
         return True
+
+    def thirty_six(self):
+        thirty_six = [
+            (0,0),
+            (1,1),
+            (2,2),
+            (3,3),
+            (4,4),
+            (5,5),
+            (6,6),
+            (7,7),
+            (8,8),
+            (9,9),
+            (10,10),
+            (11,11),
+            (0,3),
+            (1,4),
+            (2,5),
+            (6,9),
+            (7,10),
+            (8,11),
+            (3,0),
+            (4,1),
+            (5,2),
+            (6,3),
+            (7,4),
+            (8,5),
+            (9,6),
+            (10,7),
+            (11,8),
+            (6,0),
+            (7,1),
+            (8,2),
+            (9,3),
+            (10,4),
+            (11,5),
+            (9,0),
+            (10,1),
+            (11,2)
+        ]
+
+        return thirty_six[randint(0, 35)]
 
     def markers(self):
         """center of each 3x3 sudoku square"""
@@ -410,7 +457,6 @@ class Attack:
                 continue
 
     def handle_three_vertical(self, i, j):
-
         if not self.sunk_carrier or not self.sunk_hovercraft:
             hits_on_t = self.shoot_line(i, j-1, 0, -1)
 
