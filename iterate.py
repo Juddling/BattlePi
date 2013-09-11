@@ -4,6 +4,7 @@ import constants
 from Attack import Attack, HuntType
 from game_logic import InitPlayerBoard, DeployFleet
 from addition import add_jagged_list
+from GameManager import *
 
 enemy_config1 = [
     [1, 1, 1, 1, 1, 1],
@@ -177,7 +178,9 @@ for i in range(iterations):
     #
     # heat_map = add_jagged_list(heat_map, config)
 
-    attack = Attack(enemy_config10, HuntType.LINES)
+    manager = IterateGameManager(enemy_config10)
+
+    attack = manager.attacker
     total = attack.hits + attack.misses
     csv += str(total) + "," + str(attack.search_misses) + "," + str(attack.misses - attack.search_misses) + "\n"
 

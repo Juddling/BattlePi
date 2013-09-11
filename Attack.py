@@ -14,7 +14,7 @@ class HuntType:
 
 
 class Attack:
-    def __init__(self, enemy_config, attack_type):
+    def __init__(self, enemy_config, attack_type, parent):
         self.view_of_opponent = [[constants.UNKNOWN] * (6 if x < 6 else 12) for x in range(constants.BOARD_HEIGHT)]
 
         self.default_attack_type = attack_type
@@ -32,9 +32,10 @@ class Attack:
         self.sunk_carrier = False
         self.sunk_hovercraft = False
         self.sunk_two_boat = False
+        self.attack_queue = []
+        self.game = parent
 
-        #print (self.view_of_opponent)
-
+    def begin_attacking(self):
         while self.hits < constants.TOTAL_HITS:
             i, j = self.random()
 
@@ -42,17 +43,10 @@ class Attack:
                 self.hunt_existing_hits()
                 break
 
-            # if self.repeats >= 500:
-            #     raise RuntimeError('Reverted to random shooting')
-            #     # TODO: get rid of this, revert to shooting neighbours of existing hits
-            #     self.true_random = True
-
             self.attack_enemy(i, j, HuntType.SEARCH)
 
-            if self.hits == 15:
-                pass
-
-        pass
+    def handle_attack_enemy(self, i, j):
+        raise NotImplementedError('this method should be overridden by child class')
 
     def hunt_existing_hits(self):
         for i, row in enumerate(self.view_of_opponent):
@@ -138,9 +132,21 @@ class Attack:
 
             return
 
-        if self.enemy_config[i][j] == constants.OCCUPIED:
+        attack = (i, j), attack_type
+        return self.execute_attack(attack, self.game.attack_from_below(attack))
+        #self.append_attack_queue()
+
+
+
+    def execute_attack(self, queued_attack, outcome):
+        # this will blow up if there's nothing in the queue
+        point, attack_type = queued_attack
+        i, j = point
+
+        if outcome:
             self.hits += 1
             self.view_of_opponent[i][j] = constants.OCCUPIED
+            self.game.after_attack_event()
 
             if attack_type == HuntType.SEARCH:
                 self.search_hits += 1
@@ -161,8 +167,16 @@ class Attack:
 
             self.misses += 1
             self.view_of_opponent[i][j] = constants.UNOCCUPIED
+            self.game.after_attack_event()
 
             return False
+
+    def append_attack_queue(self, point, attack_type):
+        """
+        point is a tuple (i, j)
+        """
+
+        self.attack_queue.append((point, attack_type))
 
     def random(self):
         """Searches for ships across the whole domain"""
@@ -605,7 +619,7 @@ class Attack:
             if hits == 3:
                 break
 
-            if hits == 1:
+            if hits == 1: # or self.sunk_hovercraft
                 if i_direction != 0 and not self.legal_position(i + (2 * i_direction), j):
                     break
 

@@ -1,35 +1,9 @@
-import os
 import constants
 from random import randint
 import transform
+from GameManager import GameManager
 
 __author__ = 'Judd'
-# Clear the screen and draw the two boards side by side
-def PrintBoards(Player, Opponent):
-    # Clear the screen
-    os.system('cls' if os.name == 'nt' else 'clear')
-    # Print board labels
-    print(' ' * 10, 'PLAYER', ' ' * 30, 'OPPONENT')
-    letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
-    for x in range(6):
-        print(letters[x], "  ".join(map(DisplayChar, Player[x])), " " * 18, "| ",
-              "  ".join(map(DisplayChar, Opponent[x])))
-    for x in range(6, 12):
-        print(letters[x], "  ".join(map(DisplayChar, Player[x])), " | ", "  ".join(map(DisplayChar, Opponent[x])))
-    print(" ", "  ".join(map(str, range(1, 10))), " 10 11 12", "  ", "  ".join(map(str, range(1, 10))), " 10 11 12")
-
-# Mapping function that determines how each square state is displayed
-def DisplayChar(x):
-    if x == 0:
-        return '?'
-    elif x == constants.UNOCCUPIED or x == constants.BUBBLE:
-        return ' '
-    elif x == constants.OCCUPIED:
-        return 'X'
-    elif x == 3:
-        return ' '
-    elif x == 4:
-        return '*'
 
 # Check whether the fleet is sunk
 def CheckWinner(Board):
@@ -62,44 +36,6 @@ def InitPlayerBoard(square = 1):
     return [[square] * (6 if x < 6 else 12) for x in range(constants.BOARD_HEIGHT)]
 
 # Read a move from the keyboard and return board indices
-def GetMove():
-    # We are expecting letter+number, e.g. C3
-    is_valid = False
-    while not is_valid:
-        # Read opponent's move
-        entry = input('Enter opponents move (e.g. C3): ')
-        entry = entry.lower()
-        if (len(entry) == 2) or (len(entry) == 3):
-            # Convert letter coordinate into ASCII code and convert to index by subtracting code for 'a'
-            i1 = ord(entry[0]) - 97
-            # Convert number coordinate to zero-based indexing
-            i2 = int(entry[1:]) - 1
-            # Check whether they are valid coordinates
-            if (i1 <= 5) and (i1 >= 0):
-                # Top half of board
-                is_valid = (i2 >= 0) and (i2 <= 5)
-            elif (i1 >= 6) and (i1 <= 11):
-                # Bottom half of board
-                is_valid = (i2 >= 0) and (i2 <= 11)
-        if not is_valid:
-            print('Invalid coordinate, try again')
-    return i1, i2
-
-# Read the outcome of the shot from the keyboard
-def GetOutcome():
-    is_valid = False
-    while not is_valid:
-        entry = input('Outcome? (h/m) ')
-        if entry.lower() == 'h':
-            is_valid = True
-            Outcome = 4
-        elif entry.lower() == 'm':
-            is_valid = True
-            Outcome = 3
-        else:
-            print("Invalid input: must enter h (hit) or m (miss)")
-    return Outcome
-
 
 def RandomCoOrdinates():
     i1 = randint(0, 11)
@@ -112,8 +48,7 @@ def RandomCoOrdinates():
 
     return i1, i2
 
-def PrintMove(i, j):
-    print('my move: ', chr(i + 65), j + 1)
+
 
 # Decide what move to make based on current state of opponent's board and print it out
 def ChooseAndPrintMove(Opponent):
@@ -127,7 +62,7 @@ def ChooseAndPrintMove(Opponent):
 
 # Distribute the fleet onto your board
 def DeployFleet(Player, verbose=False):
-    ships = transform.raw_ships()
+    ships = transform.bubble_ships()
     initial = Player.copy()
 
     for ship in ships:
@@ -185,16 +120,3 @@ def ValidPlacement(domain, ship, verbose=False):
         # if clips outside edge?
 
         return x, y
-
-def UpdateAndPrint(Player, Opponent, i1, i2):
-    if (Player[i1][i2] == 2) or (Player[i1][i2] == 4):
-        # They may (stupidly) hit the same square twice so we check for occupied or hit
-        Player[i1][i2] = 4
-        PrintBoards(Player, Opponent)
-        print('Hit!')
-    else:
-        # You might like to keep track of where your opponent has missed, but here we just acknowledge it
-        PrintBoards(Player, Opponent)
-        print('Missed!')
-    return Player
-
