@@ -156,6 +156,21 @@ enemy_config10 = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
+ant_config = [
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 2, 2, 1, 1],
+    [1, 1, 1, 2, 2, 1],
+    [2, 2, 2, 2, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2],
+    [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2],
+]
+
 iterations = 1000
 csv = ""
 
@@ -193,7 +208,7 @@ for i in range(iterations):
           ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses,
           " Elim: ", len(unique), " 36 search: ", attack.thirty_six_search)
 
-with open("lines10.csv", 'w') as f:
+with open("ant_lines.csv", 'w') as f:
     f.write("total shots,search misses,other misses\n" + csv)
 
 # for row in heat_map:

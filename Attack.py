@@ -136,8 +136,6 @@ class Attack:
         return self.execute_attack(attack, self.game.attack_from_below(attack))
         #self.append_attack_queue()
 
-
-
     def execute_attack(self, queued_attack, outcome):
         # this will blow up if there's nothing in the queue
         point, attack_type = queued_attack
@@ -619,7 +617,7 @@ class Attack:
             if hits == 3:
                 break
 
-            if hits == 1: # or self.sunk_hovercraft
+            if hits == 1 or self.sunk_hovercraft:
                 if i_direction != 0 and not self.legal_position(i + (2 * i_direction), j):
                     break
 

@@ -180,10 +180,13 @@ def slice_overlap(listin, n):
 
 
 def match_match_single(x, y):
+    """
+    x is single element from the needle, will allow 5s / bubble to match against anything
+    """
     # if x == constants.UNKNOWN or y == constants.UNKNOWN:
     #     return True
 
-    return x == y
+    return x == y or x == constants.BUBBLE
 
 
 def match_slice(needle, haystack):
@@ -231,6 +234,7 @@ def match_matrix(needle, haystack):
 
     for j in range(len(haystack) - len(needle) + 1):
         ungrouped = match_matrix_same_height(needle, haystack[j:j + len(needle)])
+
         positions = matches_to_relative_position(group_matches(ungrouped), j)
 
         for p in positions:
@@ -269,6 +273,9 @@ def group_matches(matches):
             # can't check if element is in a generator
             if col not in row_expanded:
                 cols.remove(col)
+
+                if len(cols) == 0:
+                    return []
 
     return cols
 

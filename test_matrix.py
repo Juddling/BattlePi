@@ -5,6 +5,34 @@ import transform
 __author__ = 'Judd'
 
 class TestPatternMatching(TestCase):
+    def test_elimination(self):
+        config = [[1, 1, 0, 1, 1, 0],
+                  [0, 2, 2, 2, 2, 0],
+                  [0, 1, 0, 0, 1, 0],
+                  [1, 1, 0, 1, 0, 0],
+                  [1, 2, 0, 0, 1, 0],
+                  [0, 2, 0, 0, 0, 1],
+                  [1, 2, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0],
+                  [0, 1, 0, 0, 1, 0, 0, 1, 1, 2, 2, 1],
+                  [0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 1, 0],
+                  [0, 0, 1, 2, 2, 1, 0, 0, 0, 1, 1, 0],
+                  [0, 1, 1, 1, 2, 2, 0, 1, 2, 2, 2, 1],
+                  [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1]]
+
+        matches = transform.match_matrix([[0,0,0],
+                                          [5,0,5],
+                                          [5,0,5],
+                                          [5,0,5]], config)
+
+        co_ords = []
+
+        for j, i in matches:
+            co_ords.append((i, j))
+
+        self.assertSequenceEqual(co_ords, [
+            (6, 5)
+        ])
+
     def test_slice_overlap(self):
         slices = transform.slice_overlap([1,2,3,4,5], 2)
         response = [
