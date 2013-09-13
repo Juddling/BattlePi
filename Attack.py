@@ -180,6 +180,21 @@ class Attack:
         """Searches for ships across the whole domain"""
 
         while True:
+            if not self.sunk_carrier and self.hits == 15:
+                return self.carrier_recommendation()
+
+            if not self.sunk_hovercraft and self.hits == 15:
+                return self.hovercraft_recommendation()
+
+            if self.hits == 17 and self.sunk_carrier and self.sunk_hovercraft:
+                return self.four_recommendation()
+
+            if self.hits == 18 and self.sunk_carrier and self.sunk_hovercraft:
+                return self.three_recommendation()
+
+            if self.hits == 19 and self.sunk_carrier and self.sunk_hovercraft:
+                return self.two_recommendation()
+
             i = randint(0, 11)
 
             if i < 6:
@@ -210,11 +225,11 @@ class Attack:
             return i, j
 
     def uber_eliminate(self, rand_i, rand_j):
-        matches = transform.match_matrix([[0,0,0]], self.view_of_opponent)
-        allowed_points =  []
-
         if not self.sunk_two_boat or not self.sunk_carrier:
             return False
+
+        matches = transform.match_matrix([[0,0,0]], self.view_of_opponent)
+        allowed_points =  []
 
         for j, i in matches: # reversed on purpose
             allowed_points.append((i, j))
@@ -236,6 +251,83 @@ class Attack:
         self.eliminated_points.append((rand_i, rand_j))
 
         return True
+
+    def carrier_recommendation(self):
+        shape = [
+            [0,0,0],
+            [5,0,5],
+            [5,0,5],
+            [5,0,5]
+        ]
+
+        co_ords = [
+            (0,0),
+            (0,1),
+            (0,2),
+            (1,1),
+            (2,1),
+            (3,1)
+        ]
+
+        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+
+    def hovercraft_recommendation(self):
+        shape = [
+            [5,0,5],
+            [0,0,0],
+            [0,5,0]
+        ]
+
+        co_ords = [
+            (0,1),
+            (1,0),
+            (2,0),
+            (1,1),
+            (1,2),
+            (2,2)
+        ]
+
+        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+
+    def four_recommendation(self):
+        shape = [
+            [0,0,0,0]
+        ]
+
+        co_ords = [
+            (0,0),
+            (0,1),
+            (0,2),
+            (0,3),
+        ]
+
+        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+
+    def three_recommendation(self):
+        shape = [
+            [0,0,0]
+        ]
+
+        co_ords = [
+            (0,0),
+            (0,1),
+            (0,2),
+
+        ]
+
+        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+
+    def two_recommendation(self):
+        shape = [
+            [0,0]
+        ]
+
+        co_ords = [
+            (0,0),
+            (0,1),
+        ]
+
+        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
 
     def thirty_six(self):
         thirty_six = [
