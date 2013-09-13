@@ -4,6 +4,185 @@ import transform
 
 __author__ = 'Judd'
 
+class TestMatchAllTransformations(TestCase):
+    def test_carrier_positions(self):
+        board = [
+            [1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 2, 1],
+            [1, 1, 0, 1, 1, 1],
+            [1, 1, 0, 1, 1, 1],
+            [1, 2, 0, 1, 1, 1],
+            [1, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 2, 1],
+            [1, 1, 1, 1, 2, 2, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 2, 2, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        ]
+
+        shape = [
+            [0,0,0],
+            [5,0,5],
+            [5,0,5],
+            [5,0,5]
+        ]
+
+        co_ords = [
+            (0,0),
+            (0,1),
+            (0,2),
+            (1,1),
+            (2,1),
+            (2,1)
+        ]
+
+        bla = transform.ShapeAndCoOrds(shape, co_ords)
+
+        single_matches = []
+
+        for result in bla.all_transformations():
+            matches = transform.match_matrix(result[0], board)
+
+            for j, i in matches: # reversed on purpose
+                single_matches.append((i, j))
+
+        self.assertCountEqual(single_matches, [
+            (6,6),
+            (6,7),
+            (7,6),
+            (7,6),
+            (1,1)
+        ])
+
+    def test_carrier_squares(self):
+        board = [
+            [1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 2, 1],
+            [1, 1, 0, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1],
+            [1, 2, 0, 1, 1, 1],
+            [1, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 2, 1],
+            [1, 1, 1, 1, 2, 2, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 2, 2, 1, 0, 1, 1, 0, 1, 1],
+            [1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 2, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        ]
+
+        shape = [
+            [0,0,0],
+            [5,0,5],
+            [5,0,5],
+            [5,0,5]
+        ]
+
+        co_ords = [
+            (0,0),
+            (0,1),
+            (0,2),
+            (1,1),
+            (2,1),
+            (3,1)
+        ]
+
+        bla = transform.ShapeAndCoOrds(shape, co_ords)
+
+        allowed_points =  []
+        single_matches = []
+
+        for result in bla.all_transformations():
+            matches = transform.match_matrix(result[0], board)
+
+            for j, i in matches: # reversed on purpose
+                single_matches.append((i, j))
+
+                for relative_tuple in result[1]:
+                    allowed_points.append((i+relative_tuple[0], j+relative_tuple[1]))
+
+        self.assertCountEqual(single_matches, [
+            (7,6),
+            (7,6)
+        ])
+
+        self.assertCountEqual(tuple(allowed_points), [
+            # horizonal at 7,6
+            (7,6),
+            (8,6),
+            (9,6),
+            (8,7),
+            (8,8),
+            (8,9),
+
+            # horizonal at 7,6 other way
+            (8,6),
+            (8,7),
+            (8,8),
+            (8,9),
+            (7,9),
+            (9,9),
+        ])
+
+    def test_hovercraft_positions(self):
+        board = [
+            [2, 2, 2, 1, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1],
+            [1, 0, 1, 1, 0, 2, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 0, 1, 2, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 1, 2, 2, 2, 1, 1, 2, 1, 2],
+            [0, 0, 0, 0, 1, 1, 1, 0, 1, 2, 2, 2],
+            [0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 2, 0],
+            [0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0]
+        ]
+
+        shape = [
+            [5,0,5],
+            [0,0,0],
+            [0,5,0]
+        ]
+
+        co_ords = [
+            (0,1),
+            (1,0),
+            (2,0),
+            (1,1),
+            (1,2),
+            (2,2)
+        ]
+
+        bla = transform.ShapeAndCoOrds(shape, co_ords)
+
+        allowed_points =  []
+        single_matches = []
+
+        for result in bla.all_transformations():
+            matches = transform.match_matrix(result[0], board)
+
+            for j, i in matches: # reversed on purpose
+                single_matches.append((i, j))
+
+                for relative_tuple in result[1]:
+                    allowed_points.append((i+relative_tuple[0], j+relative_tuple[1]))
+
+        self.assertCountEqual(single_matches, [
+            (6,0),
+            (9,9)
+        ])
+
+        self.assertCountEqual(allowed_points, [
+            (7,0),
+            (8,0),
+            (6,1),
+            (7,1),
+            (7,2),
+            (8,2)
+        ])
+
 class TestPatternMatching(TestCase):
     def test_elimination(self):
         config = [[1, 1, 0, 1, 1, 0],

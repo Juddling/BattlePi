@@ -1,14 +1,77 @@
 from random import randint
 import constants
 
+class ShapeAndCoOrds():
+    def __init__(self, shape, co_ords):
+        self.shape = shape
+        self.co_ords = co_ords
+
+    def all_transformations(self):
+        """
+        returns tuple (rotated, list of relative co ords)
+        """
+        i = 0
+
+        for i in range(4):
+            m = Matrix(self.shape)
+            yield (m.rotate_n(i), self.transform_co_ords(i))
+
+    def transform_co_ords(self, i):
+        height = len(self.shape)
+
+        if i == 0:
+            # not sure why i can't just return the list in this situation
+            for tup in self.co_ords:
+                yield tup
+        if i == 1:
+            for tup in self.co_ords:
+                yield (tup[1], tup[0])
+        if i == 2:
+            for tup in self.co_ords:
+                yield (height - 1 - tup[0], tup[1])
+        if i == 3:
+            for tup in self.co_ords:
+                yield (tup[1], height - 1 - tup[0])
+
+class Recommendation():
+    @staticmethod
+    def point(board, shape, co_ords):
+        bla = ShapeAndCoOrds(shape, co_ords)
+
+        allowed_points =  []
+
+        for result in bla.all_transformations():
+            matches = match_matrix(result[0], Recommendation.pad_out_board(board[:]))
+
+            for j, i in matches: # reversed on purpose
+                for relative_tuple in result[1]:
+                    allowed_points.append((i+relative_tuple[0], j+relative_tuple[1]))
+
+        d = {x:allowed_points.count(x) for x in allowed_points}
+
+        for w in sorted(d, key=d.get, reverse=True):
+            return w
+
+        raise RuntimeError('no recommendations for the boat, yet seems to be last remaining')
+
+    @staticmethod
+    def pad_out_board(board):
+        for i, row in enumerate(board):
+            if len(row) == 6:
+                for bla in range(6):
+                    board[i].append(1)
+
+        return board
+
 
 class Matrix:
     def __init__(self, matrix):
         self.matrix = matrix
 
     def rotate_n(self, n):
-        if n == 4:
-            return self.rotate(self.rotate(self.rotate(self.rotate(self.matrix))))
+        if n == 4 or n == 0:
+            # four / zero rotations = identity
+            return self.matrix
         if n == 3:
             return self.rotate(self.rotate(self.rotate(self.matrix)))
         if n == 2:
