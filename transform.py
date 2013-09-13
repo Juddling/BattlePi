@@ -1,6 +1,7 @@
 from random import randint
 import constants
 
+
 class ShapeAndCoOrds():
     def __init__(self, shape, co_ords):
         self.shape = shape
@@ -33,21 +34,66 @@ class ShapeAndCoOrds():
             for tup in self.co_ords:
                 yield (tup[1], height - 1 - tup[0])
 
+
 class Recommendation():
+    four_boat = {
+        "shape": [[0, 0, 0, 0]],
+        "points": [(0, 0), (0, 1), (0, 2), (0, 3)]
+    }
+    three_boat = {
+        "shape": [[0, 0, 0]],
+        "points": [(0, 0), (0, 1), (0, 2)]
+    }
+    two_boat = {
+        "shape": [[0, 0]],
+        "points": [(0, 0), (0, 1)]
+    }
+    carrier = {
+        "shape": [
+            [0,0,0],
+            [5,0,5],
+            [5,0,5],
+            [5,0,5]
+        ],
+        "points": [
+            (0,0),
+            (0,1),
+            (0,2),
+            (1,1),
+            (2,1),
+            (3,1)
+        ]
+    }
+    hovercraft = {
+        "shape": [
+            [5,0,5],
+            [0,0,0],
+            [0,5,0]
+        ],
+        "points": [
+            (0,1),
+            (1,0),
+            (2,0),
+            (1,1),
+            (1,2),
+            (2,2)
+        ]
+    }
+
     @staticmethod
     def point(board, shape, co_ords):
         bla = ShapeAndCoOrds(shape, co_ords)
 
-        allowed_points =  []
+        allowed_points = []
 
         for result in bla.all_transformations():
             matches = match_matrix(result[0], Recommendation.pad_out_board(board[:]))
 
             for j, i in matches: # reversed on purpose
                 for relative_tuple in result[1]:
-                    allowed_points.append((i+relative_tuple[0], j+relative_tuple[1]))
+                    allowed_points.append((i + relative_tuple[0], j + relative_tuple[1]))
 
-        d = {x:allowed_points.count(x) for x in allowed_points}
+        d = {x: allowed_points.count(x) for x in allowed_points}
 
         for w in sorted(d, key=d.get, reverse=True):
             return w
@@ -100,7 +146,7 @@ class Matrix:
                     pass
 
                 transformed[width - 1 - index].append(cell)
-                index+=1
+                index += 1
 
         return transformed
 
@@ -126,6 +172,7 @@ class Matrix:
             #self.reflect_x(),
             #self.reflect_y()
         ]
+
 
 class Ships:
     Carrier = [
@@ -204,6 +251,7 @@ def bubble_ships():
 
     return [Carrier, Hovercraft, Destroyer, Cruiser, Battleship]
 
+
 def raw_ships():
     # reverse elements in the list
     # original[::-1]
@@ -222,13 +270,13 @@ def raw_ships():
     ]
 
     Destroyer = [
-        [2,2]
+        [2, 2]
     ]
     Cruiser = [
-        [2,2,2]
+        [2, 2, 2]
     ]
     Battleship = [
-        [2,2,2,2]
+        [2, 2, 2, 2]
     ]
 
     return [Carrier, Hovercraft, Destroyer, Cruiser, Battleship]
@@ -315,7 +363,6 @@ def group_matches(matches):
 
     cols = []
 
-
     for row in matches:
         # expand the generator
         row_expanded = [x for x in row]
@@ -342,9 +389,11 @@ def group_matches(matches):
 
     return cols
 
+
 def matches_to_relative_position(matches, j):
     for i in matches:
         yield (i, j)
+
 
 def heat_map(matches, haystack):
     # TODO: tweak the haystacks according to the tuples in matches

@@ -32,6 +32,8 @@ class Attack:
         self.sunk_carrier = False
         self.sunk_hovercraft = False
         self.sunk_two_boat = False
+        self.sunk_three_boat = False
+        self.sunk_four_boat = False
         self.attack_queue = []
         self.game = parent
 
@@ -253,81 +255,39 @@ class Attack:
         return True
 
     def carrier_recommendation(self):
-        shape = [
-            [0,0,0],
-            [5,0,5],
-            [5,0,5],
-            [5,0,5]
-        ]
-
-        co_ords = [
-            (0,0),
-            (0,1),
-            (0,2),
-            (1,1),
-            (2,1),
-            (3,1)
-        ]
-
-        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+        return transform.Recommendation.point(
+            self.view_of_opponent,
+            transform.Recommendation.carrier['shape'],
+            transform.Recommendation.carrier['points']
+        )
 
     def hovercraft_recommendation(self):
-        shape = [
-            [5,0,5],
-            [0,0,0],
-            [0,5,0]
-        ]
-
-        co_ords = [
-            (0,1),
-            (1,0),
-            (2,0),
-            (1,1),
-            (1,2),
-            (2,2)
-        ]
-
-        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+        return transform.Recommendation.point(
+            self.view_of_opponent,
+            transform.Recommendation.hovercraft['shape'],
+            transform.Recommendation.hovercraft['points']
+        )
 
     def four_recommendation(self):
-        shape = [
-            [0,0,0,0]
-        ]
-
-        co_ords = [
-            (0,0),
-            (0,1),
-            (0,2),
-            (0,3),
-        ]
-
-        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+        return transform.Recommendation.point(
+            self.view_of_opponent,
+            transform.Recommendation.four_boat['shape'],
+            transform.Recommendation.four_boat['points']
+        )
 
     def three_recommendation(self):
-        shape = [
-            [0,0,0]
-        ]
-
-        co_ords = [
-            (0,0),
-            (0,1),
-            (0,2),
-
-        ]
-
-        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+        return transform.Recommendation.point(
+            self.view_of_opponent,
+            transform.Recommendation.three_boat['shape'],
+            transform.Recommendation.three_boat['points']
+        )
 
     def two_recommendation(self):
-        shape = [
-            [0,0]
-        ]
-
-        co_ords = [
-            (0,0),
-            (0,1),
-        ]
-
-        return transform.Recommendation.point(self.view_of_opponent, shape, co_ords)
+        return transform.Recommendation.point(
+            self.view_of_opponent,
+            transform.Recommendation.two_boat['shape'],
+            transform.Recommendation.two_boat['points']
+        )
 
     def thirty_six(self):
         thirty_six = [
@@ -481,28 +441,7 @@ class Attack:
                 if hits == 3:
                     # four in a row, now lets eliminate the T shape
 
-                    if self.sunk_carrier:
-                        return
-
-                    if j_direction != 0:
-                        #horizontal four
-                        if not self.attack_above_and_below(current_i, current_j):
-                            if self.attack_above_and_below(current_i, current_j - (j_direction * 3)):
-                                self.sunk_carrier = True
-                                return
-                        else:
-                            self.sunk_carrier = True
-                            return
-
-                    if i_direction != 0:
-                        #vertical four
-                        if not self.attack_left_and_right(current_i, current_j):
-                            if self.attack_left_and_right(current_i - (i_direction * 3), current_j):
-                                self.sunk_carrier = True
-                                return
-                        else:
-                            self.sunk_carrier = True
-                            return
+                    self.handle_four(current_i, current_j, i_direction, j_direction)
 
                     # stopping the miss after taking out the four boat
                     return
@@ -560,6 +499,32 @@ class Attack:
                 line = 1
                 continue
 
+    def handle_four(self, current_i, current_j, i_direction, j_direction):
+        if self.sunk_carrier:
+            return
+
+        if j_direction != 0:
+            #horizontal four
+            if not self.attack_above_and_below(current_i, current_j):
+                if self.attack_above_and_below(current_i, current_j - (j_direction * 3)):
+                    self.sunk_carrier = True
+                else:
+                    self.sunk_four_boat = True
+            else:
+                self.sunk_carrier = True
+                return
+
+        if i_direction != 0:
+            #vertical four
+            if not self.attack_left_and_right(current_i, current_j):
+                if self.attack_left_and_right(current_i - (i_direction * 3), current_j):
+                    self.sunk_carrier = True
+                else:
+                    self.sunk_four_boat = True
+            else:
+                self.sunk_carrier = True
+                return
+
     def handle_three_vertical(self, i, j):
         if not self.sunk_carrier or not self.sunk_hovercraft:
             hits_on_t = self.shoot_line(i, j-1, 0, -1)
@@ -585,6 +550,8 @@ class Attack:
                 elif hits_on_t_other == 3:
                     self.sunk_carrier = True
                     return
+                elif hits_on_t_other == 0:
+                    self.sunk_three_boat = True
 
             elif hits_on_t == 3:
                 self.sunk_carrier = True
@@ -620,6 +587,8 @@ class Attack:
                 elif hits_on_t_other == 3:
                     self.sunk_carrier = True
                     return
+                elif hits_on_t_other == 0:
+                    self.sunk_three_boat = True
 
             elif hits_on_t == 3:
                 self.sunk_carrier = True

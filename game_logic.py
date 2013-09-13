@@ -1,7 +1,6 @@
 import constants
 from random import randint
 import transform
-from GameManager import GameManager
 
 __author__ = 'Judd'
 
