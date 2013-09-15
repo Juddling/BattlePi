@@ -185,7 +185,7 @@ boards = [
 ]
 
 i = 1
-iterations = 1000
+iterations = 1
 
 for board in boards:
     csv = ""
@@ -227,7 +227,7 @@ for board in boards:
 #     #
 #     # heat_map = add_jagged_list(heat_map, config)
 #
-#     manager = IterateGameManager(enemy_config1)
+#     manager = IterateGameManager(enemy_config2)
 #
 #     attack = manager.attacker
 #     total = attack.hits + attack.misses
@@ -239,5 +239,5 @@ for board in boards:
 #           ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses,
 #           " Elim: ", len(unique), " 36 search: ", attack.thirty_six_search)
 #
-# with open("lines1.csv", 'w') as f:
+# with open("lines2.csv", 'w') as f:
 #     f.write("total shots,search misses,other misses\n" + csv)

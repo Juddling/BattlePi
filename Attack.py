@@ -178,8 +178,30 @@ class Attack:
 
         self.attack_queue.append((point, attack_type))
 
+    def remaining_boats(self):
+        boats = []
+
+        if not self.sunk_carrier:
+            boats.append(transform.Recommendation.carrier)
+
+        if not self.sunk_hovercraft:
+            boats.append(transform.Recommendation.hovercraft)
+
+        if not self.sunk_two_boat:
+            boats.append(transform.Recommendation.two_boat)
+
+        if not self.sunk_three_boat:
+            boats.append(transform.Recommendation.three_boat)
+
+        if not self.sunk_four_boat:
+            boats.append(transform.Recommendation.four_boat)
+
+        return boats
+
     def random(self):
         """Searches for ships across the whole domain"""
+
+        return transform.Recommendation.point_from_remaining(self.view_of_opponent, self.remaining_boats())
 
         while True:
             if not self.sunk_carrier and self.hits == 15:

@@ -15,7 +15,7 @@ class ShapeAndCoOrds():
 
         for i in range(4):
             m = Matrix(self.shape)
-            yield (m.rotate_n(i), self.transform_co_ords(i))
+            yield (m.rotate_n(i), [x for x in self.transform_co_ords(i)])
 
     def transform_co_ords(self, i):
         height = len(self.shape)
@@ -79,6 +79,27 @@ class Recommendation():
             (2,2)
         ]
     }
+
+    @staticmethod
+    def point_from_remaining(board, remaining_boats):
+        allowed_points = []
+
+        for boat in remaining_boats:
+            bla = ShapeAndCoOrds(boat['shape'], boat['points'])
+
+            for result in bla.all_transformations():
+                matches = match_matrix(result[0], Recommendation.pad_out_board(board[:]))
+
+                for j, i in matches: # reversed on purpose
+                    for relative_tuple in result[1]:
+                        allowed_points.append((i + relative_tuple[0], j + relative_tuple[1]))
+
+        d = {x: allowed_points.count(x) for x in allowed_points}
+
+        for w in sorted(d, key=d.get, reverse=True):
+            return w
+
+        raise RuntimeError('no recommendations for the boat, yet seems to be last remaining')
 
     @staticmethod
     def point(board, shape, co_ords):
