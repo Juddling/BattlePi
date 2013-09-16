@@ -47,9 +47,6 @@ class Attack:
 
             self.attack_enemy(i, j, HuntType.SEARCH)
 
-    def handle_attack_enemy(self, i, j):
-        raise NotImplementedError('this method should be overridden by child class')
-
     def hunt_existing_hits(self):
         for i, row in enumerate(self.view_of_opponent):
             for j, cell in enumerate(row):
@@ -203,50 +200,50 @@ class Attack:
 
         return transform.Recommendation.point_from_remaining(self.view_of_opponent, self.remaining_boats())
 
-        while True:
-            if not self.sunk_carrier and self.hits == 15:
-                return self.carrier_recommendation()
-
-            if not self.sunk_hovercraft and self.hits == 15:
-                return self.hovercraft_recommendation()
-
-            if self.hits == 17 and self.sunk_carrier and self.sunk_hovercraft:
-                return self.four_recommendation()
-
-            if self.hits == 18 and self.sunk_carrier and self.sunk_hovercraft:
-                return self.three_recommendation()
-
-            if self.hits == 19 and self.sunk_carrier and self.sunk_hovercraft:
-                return self.two_recommendation()
-
-            i = randint(0, 11)
-
-            if i < 6:
-                j = randint(0, 5)
-            else:
-                j = randint(0, 11)
-
-            if not self.true_random:
-                if i % 2 == 0 and j % 2 == 1:
-                    continue
-
-                if i % 2 == 1 and j % 2 == 0:
-                    continue
-
-            if self.sunk_two_boat and (self.search_misses + self.search_misses) <= 30:
-                self.thirty_six_search = True
-                i, j = self.thirty_six()
-
-            if self.repeat_check(i, j):
-                continue
-
-            if self.eliminated(i, j):
-                continue
-
-            if self.uber_eliminate(i, j):
-                continue
-
-            return i, j
+        # while True:
+        #     if not self.sunk_carrier and self.hits == 15:
+        #         return self.carrier_recommendation()
+        #
+        #     if not self.sunk_hovercraft and self.hits == 15:
+        #         return self.hovercraft_recommendation()
+        #
+        #     if self.hits == 17 and self.sunk_carrier and self.sunk_hovercraft:
+        #         return self.four_recommendation()
+        #
+        #     if self.hits == 18 and self.sunk_carrier and self.sunk_hovercraft:
+        #         return self.three_recommendation()
+        #
+        #     if self.hits == 19 and self.sunk_carrier and self.sunk_hovercraft:
+        #         return self.two_recommendation()
+        #
+        #     i = randint(0, 11)
+        #
+        #     if i < 6:
+        #         j = randint(0, 5)
+        #     else:
+        #         j = randint(0, 11)
+        #
+        #     if not self.true_random:
+        #         if i % 2 == 0 and j % 2 == 1:
+        #             continue
+        #
+        #         if i % 2 == 1 and j % 2 == 0:
+        #             continue
+        #
+        #     if self.sunk_two_boat and (self.search_misses + self.search_misses) <= 30:
+        #         self.thirty_six_search = True
+        #         i, j = self.thirty_six()
+        #
+        #     if self.repeat_check(i, j):
+        #         continue
+        #
+        #     if self.eliminated(i, j):
+        #         continue
+        #
+        #     if self.uber_eliminate(i, j):
+        #         continue
+        #
+        #     return i, j
 
     def uber_eliminate(self, rand_i, rand_j):
         if not self.sunk_two_boat or not self.sunk_carrier:
@@ -439,6 +436,11 @@ class Attack:
         return False
 
     def shoot_lines(self, i, j):
+        """
+        after getting a search hit, this method is called, it will attack up, down, right, left until it gets a hit,
+        then continue in that direction, then handle the cases of two/three/four in a row
+        """
+
         line = 1
         i_direction = -1
         j_direction = 0
@@ -466,6 +468,10 @@ class Attack:
                     self.handle_four(current_i, current_j, i_direction, j_direction)
 
                     # stopping the miss after taking out the four boat
+                    return
+
+                if hits == 2 and self.sunk_four_boat and self.sunk_carrier:
+                    # hit three in a row, and you've sunk both the boats which contain fours
                     return
 
                 line += 1
