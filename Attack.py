@@ -39,11 +39,12 @@ class Attack:
 
     def begin_attacking(self):
         while self.hits < constants.TOTAL_HITS:
-            i, j = self.random()
 
-            if self.hits == 20:
+            try:
+                i, j = self.random()
+            except transform.NoRecommendationError:
                 self.hunt_existing_hits()
-                break
+                return
 
             self.attack_enemy(i, j, HuntType.SEARCH)
 

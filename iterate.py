@@ -171,21 +171,21 @@ ant_config = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2],
 ]
 
-boards = [
-    enemy_config1,
-    enemy_config2,
-    enemy_config3,
-    enemy_config4,
-    enemy_config5,
-    enemy_config6,
-    enemy_config7,
-    enemy_config8,
-    enemy_config9,
-    enemy_config10
-]
-
+# boards = [
+#     enemy_config1,
+#     enemy_config2,
+#     enemy_config3,
+#     enemy_config4,
+#     enemy_config5,
+#     enemy_config6,
+#     enemy_config7,
+#     enemy_config8,
+#     enemy_config9,
+#     enemy_config10
+# ]
+#
 # i = 1
-# iterations = 1
+# iterations = 100
 #
 # for board in boards:
 #     csv = ""
@@ -204,7 +204,8 @@ boards = [
 #         print("wrote to", file_name)
 #
 #     i += 1
-
+#
+# quit()
 
 iterations = 1000
 csv = ""
@@ -212,16 +213,16 @@ csv = ""
 
 for i in range(iterations):
 
-    # # use this to deploy a random board
-    # while True:
-    #     config = InitPlayerBoard()
-    #     try:
-    #         DeployFleet(config, False)
-    #     except RuntimeError:
-    #         continue
-    #
-    #     break
-    # # end random board
+    # use this to deploy a random board
+    while True:
+        config = InitPlayerBoard()
+        try:
+            DeployFleet(config, False)
+        except RuntimeError:
+            continue
+
+        break
+
 
     # # use this for generating a heat map from random boards
     # for row in config:
@@ -232,7 +233,7 @@ for i in range(iterations):
     # heat_map = add_jagged_list(heat_map, config)
     # # end heat map
 
-    manager = IterateGameManager(enemy_config3)
+    manager = IterateGameManager(config)
 
     attack = manager.attacker
     total = attack.hits + attack.misses
@@ -244,5 +245,5 @@ for i in range(iterations):
           ", Search Misses: ", attack.search_misses, "Other Misses: ", attack.misses - attack.search_misses,
           " Elim: ", len(unique), " 36 search: ", attack.thirty_six_search)
 
-with open("lines3.csv", 'w') as f:
+with open("random_unbubbled.csv", 'w') as f:
     f.write("total shots,search misses,other misses\n" + csv)

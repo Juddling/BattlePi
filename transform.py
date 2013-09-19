@@ -1,6 +1,10 @@
-from random import randint
 import constants
+import random
 
+from collections import Counter
+
+class NoRecommendationError(RuntimeError):
+    pass
 
 class ShapeAndCoOrds():
     def __init__(self, shape, co_ords):
@@ -94,12 +98,21 @@ class Recommendation():
                     for relative_tuple in result[1]:
                         allowed_points.append((i + relative_tuple[0], j + relative_tuple[1]))
 
-        d = {x: allowed_points.count(x) for x in allowed_points}
+        # d = {x: allowed_points.count(x) for x in allowed_points}
+        #
+        # for w in sorted(d, key=d.get, reverse=True):
+        #     return w
 
-        for w in sorted(d, key=d.get, reverse=True):
-            return w
+        if len(allowed_points) == 0:
+            raise NoRecommendationError('no recommendations for the boat, yet seems to be last remaining')
 
-        raise RuntimeError('no recommendations for the boat, yet seems to be last remaining')
+        lst = Counter(allowed_points).most_common()
+        highest_count = max([i[1] for i in lst])
+        values = [i[0] for i in lst if i[1] == highest_count]
+        random.shuffle(values)
+        return values[0]
+
+
 
     @staticmethod
     def point(board, shape, co_ords):
