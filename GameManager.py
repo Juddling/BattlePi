@@ -50,12 +50,13 @@ class GameManager:
 
         if (Player[i1][i2] == 2) or (Player[i1][i2] == 4):
             # They may (stupidly) hit the same square twice so we check for occupied or hit
-            Player[i1][i2] = 4
+            Player[i1][i2] = constants.ENEMY_HIT
             print('Hit!')
         else:
+            Player[i1][i2] = constants.ENEMY_MISS
             print('Missed!')
 
-        # self.print_boards()
+        self.print_boards()
 
     def set_up_boards(self):
         while True:
@@ -143,6 +144,8 @@ class GameManager:
             return ' '
         elif x == 4:
             return '*'
+        elif x == constants.ENEMY_MISS:
+            return '.'
 
 class IterateGameManager(GameManager):
     def __init__(self, config):
