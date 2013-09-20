@@ -473,6 +473,10 @@ class Attack:
 
                 if hits == 2 and self.sunk_four_boat and self.sunk_carrier:
                     # hit three in a row, and you've sunk both the boats which contain fours
+                    # naughty Jimmy forgot to handle the threes
+
+                    self.handle_three(current_i, current_j, i_direction, j_direction)
+
                     return
 
                 line += 1
@@ -527,6 +531,19 @@ class Attack:
 
                 line = 1
                 continue
+
+    def handle_three(self, current_i, current_j, i_direction, j_direction):
+        if i_direction == 1:
+            self.handle_three_vertical(current_i-1, current_j)
+
+        if i_direction == -1:
+            self.handle_three_vertical(current_i+1, current_j)
+
+        if j_direction == 1:
+            self.handle_three_horizontal(current_i, current_j-1)
+
+        if j_direction == -1:
+            self.handle_three_horizontal(current_i, current_j+1)
 
     def handle_four(self, current_i, current_j, i_direction, j_direction):
         if self.sunk_carrier:
