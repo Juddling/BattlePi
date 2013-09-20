@@ -319,19 +319,23 @@ def raw_ships():
 def slice_overlap(listin, n):
     """overlapping slice through list of size n"""
     i = 0
-    while i < len(listin) - n + 1:
+    max_overlaps = len(listin) - n + 1
+
+    while i < max_overlaps:
         yield listin[i:i + n]
         i += 1
 
 
-def match_match_single(x, y):
+def match_match_single(x, y, bubble=constants.BUBBLE):
     """
     x is single element from the needle, will allow 5s / bubble to match against anything
+    bubble being in the function signature is an optimization
     """
+
     # if x == constants.UNKNOWN or y == constants.UNKNOWN:
     #     return True
 
-    return x == y or x == constants.BUBBLE
+    return x == y or x == bubble
 
 
 def match_slice(needle, haystack):
