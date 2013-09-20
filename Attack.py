@@ -719,17 +719,20 @@ class Attack:
 
             if not self.legal_position(current_i, current_j):
                 return hits
-            else:
-                if self.is_hit(current_i, current_j):
-                    # if where you plan to shoot is already a hit, it's touching ships as the strategy now eliminates
-                    # ships as it finds them
 
-                    self.hunt(current_i, current_j)
-                    return
+            if self.is_hit(current_i, current_j):
+                # if where you plan to shoot is already a hit, it's touching ships as the strategy now eliminates
+                # ships as it finds them
+
+                self.hunt(current_i, current_j)
+                return
 
             attack_result = self.attack_enemy(current_i, current_j, HuntType.SINGLE_LINE)
 
             if not attack_result:
+                if hits == 2:
+                    self.hunt(current_i, current_j)
+
                 # None / False
                 return hits
 
