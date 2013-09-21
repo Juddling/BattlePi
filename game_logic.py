@@ -61,7 +61,7 @@ def ChooseAndPrintMove(Opponent):
 
 # Distribute the fleet onto your board
 def DeployFleet(Player, verbose=False):
-    ships = transform.raw_ships()
+    ships = transform.bubble_ships()
     initial = Player.copy()
 
     for ship in ships:
