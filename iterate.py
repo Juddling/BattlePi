@@ -20,21 +20,23 @@ boards = [
     boards.enemy_config10
 ]
 
-def run_board_csv(iterations, csv):
+def run_board_csv(iterations):
+    csv_string = ""
+
     for bla in range(iterations):
         manager = IterateGameManager(board)
 
         attack = manager.attacker
         total = attack.hits + attack.misses
-        csv += str(total) + "," + str(attack.search_misses) + "," + str(attack.misses - attack.search_misses) + "\n"
+        csv_string += str(total) + "," + str(attack.search_misses) + "," + str(attack.misses - attack.search_misses) + "\n"
+
+    return csv_string
 
 i = 1
-iterations = 1000
+iterations = 10
 
 for board in boards:
-    csv = ""
-
-    run_board_csv(iterations, csv)
+    csv = run_board_csv(iterations)
 
     file_name = "lines" + str(i) + ".csv"
 
