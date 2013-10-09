@@ -39,7 +39,6 @@ class Attack:
 
     def begin_attacking(self):
         while self.hits < constants.TOTAL_HITS:
-
             try:
                 i, j = self.random()
             except transform.NoRecommendationError:
@@ -177,6 +176,9 @@ class Attack:
         self.attack_queue.append((point, attack_type))
 
     def remaining_boats(self):
+        """
+        which boats haven't we sunk?
+        """
         boats = []
 
         if not self.sunk_carrier:
@@ -197,7 +199,9 @@ class Attack:
         return boats
 
     def random(self):
-        """Searches for ships across the whole domain"""
+        """
+        random is a poor name for this method, this is the search function which looks for an initial hit on a boat
+        """
 
         return transform.Recommendation.point_from_remaining(self.view_of_opponent, self.remaining_boats())
 
@@ -247,6 +251,10 @@ class Attack:
         #     return i, j
 
     def uber_eliminate(self, rand_i, rand_j):
+        """
+        DEPRECATED - when searching using squares of an odd/even pairity (just black squares on a chessboard), one can
+        rule out certain squares based on it's neighbours
+        """
         if not self.sunk_two_boat or not self.sunk_carrier:
             return False
 
@@ -310,6 +318,9 @@ class Attack:
         )
 
     def thirty_six(self):
+        """
+        DEPRECATED - early idea to shoot 36 high priority targets on the board
+        """
         thirty_six = [
             (0,0),
             (1,1),
@@ -352,7 +363,9 @@ class Attack:
         return thirty_six[randint(0, 35)]
 
     def markers(self):
-        """center of each 3x3 sudoku square"""
+        """
+        DEPRECATED - searching strategy to shoot at twelve high priority squares, then move on to shoot a further 36
+        """
 
         if not hasattr(self, 'marker_count'):
             self.marker_count = 0
@@ -360,6 +373,7 @@ class Attack:
             self.marker_count += 1
 
         if not hasattr(self, 'twelve'):
+            # center of each 3x3 sudoku square
             self.twelve = [
                 [1, 1],
                 [1, 4],
@@ -704,7 +718,9 @@ class Attack:
         self.sunk_hovercraft = True
 
     def hunt(self, i, j):
-        """Surrounds a hit to try and sink a ship"""
+        """
+        Surrounds a hit to try and sink a ship
+        """
 
         if (i, j) in self.neighbours_hunted:
             return

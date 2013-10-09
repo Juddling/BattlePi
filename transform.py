@@ -86,6 +86,10 @@ class Recommendation():
 
     @staticmethod
     def point_from_remaining(board, remaining_boats):
+        """
+        determines all possible locations on the board that unsunk boats can be (in all transformations) and adds
+        them to allowed_points, then returns the most probable location
+        """
         allowed_points = []
 
         for boat in remaining_boats:
@@ -98,11 +102,6 @@ class Recommendation():
                     for relative_tuple in result[1]:
                         allowed_points.append((i + relative_tuple[0], j + relative_tuple[1]))
 
-        # d = {x: allowed_points.count(x) for x in allowed_points}
-        #
-        # for w in sorted(d, key=d.get, reverse=True):
-        #     return w
-
         if len(allowed_points) == 0:
             raise NoRecommendationError('no recommendations for the boat, yet seems to be last remaining')
 
@@ -112,10 +111,11 @@ class Recommendation():
         random.shuffle(values)
         return values[0]
 
-
-
     @staticmethod
     def point(board, shape, co_ords):
+        """
+        DEPRECATED - returns the most probable location to shoot given a single boat / shape
+        """
         bla = ShapeAndCoOrds(shape, co_ords)
 
         allowed_points = []
@@ -136,6 +136,9 @@ class Recommendation():
 
     @staticmethod
     def pad_out_board(board):
+        """
+        fills in the missing top right corner with misses to make the board a square
+        """
         for i, row in enumerate(board):
             if len(row) == 6:
                 for bla in range(6):
@@ -247,8 +250,9 @@ class Ships:
 
 
 def bubble_ships():
-    # reverse elements in the list
-    # original[::-1]
+    """
+    all the ships with space (a bubble) around them
+    """
 
     Carrier = [
         [1, 5, 5, 5, 1],
@@ -287,9 +291,6 @@ def bubble_ships():
 
 
 def raw_ships():
-    # reverse elements in the list
-    # original[::-1]
-
     Carrier = [
         [1, 2, 1],
         [1, 2, 1],
@@ -427,18 +428,9 @@ def group_matches(matches):
 
     return cols
 
-
 def matches_to_relative_position(matches, j):
     for i in matches:
         yield (i, j)
-
-
-def heat_map(matches, haystack):
-    # TODO: tweak the haystacks according to the tuples in matches
-    # TODO: use matrix addition to make the heatmap
-
-    pass
-
 
 def only_hits(matrix):
     i = 0
